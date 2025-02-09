@@ -8,7 +8,7 @@ export default {
           background: '#ffffff', // Background color of the entire app
           text: '#000000', // Primary text (headings, body text, labels)
           primary: '#f97316', // Orange for button backgrounds, call-to-action, links
-          secondary: '#008080', // Teal for h1, h2, subheadings
+          secondary: '#f06c83', // Teal for h1, h2, subheadings or pink #008080
           accent: '#d97706', // Soft Gold for button hover, links, small highlights
           gray: '#f5f5f5', // Light Gray for subtle areas, card backgrounds, borders, lines
         },
@@ -16,7 +16,7 @@ export default {
           background: '#000000', // Background color of the entire app
           text: '#ffffff', // Primary text (headings, body text, labels)
           primary: '#f97316', // Orange for button backgrounds, call-to-action, links
-          secondary: '#008080', // Teal for h1, h2, subheadings
+          secondary: '#f06c83', // Teal for h1, h2, subheadings
           accent: '#d97706', // Soft Gold for button hover, links, small highlights
           gray: '#1a1a1a', // Dark Gray for subtle areas, card backgrounds, borders, lines
         },

@@ -14,7 +14,11 @@ const resources = {
       add: 'Add',
       delete: 'Delete',
       lang: 'Language',
-      join: "address the lack of access to basic education for girls in rural communities by targeting poverty, and social norms. 'Join me in creating opportunities and breaking barriers for girls in rural communities. Together, we can make education accessible to everyone."
+      join: "address the lack of access to basic education for girls in rural communities by targeting poverty, and social norms. 'Join me in creating opportunities and breaking barriers for girls in rural communities. Together, we can make education accessible to everyone.",
+      home: "Home",
+      username: 'UserName',
+      email: 'Email',
+      password:'Password'
     },
   },
   fr: {
@@ -28,7 +32,11 @@ const resources = {
       add: 'Ajouter',
       delete: 'Supprimer',
       lang: 'Langue',
-      join: 'Rejoignez-nous pour créer des opportunités et briser les barrières pour les filles dans les communautés rurales. Ensemble, nous pouvons rendre l\'éducation accessible à tous.'
+      join: 'Rejoignez-nous pour créer des opportunités et briser les barrières pour les filles dans les communautés rurales. Ensemble, nous pouvons rendre l\'éducation accessible à tous.',
+      home: 'Réception',
+      username: `nom d'utilisateur`,
+      email: 'E-mail',
+      password:'Mot de passe'
       // more French words...
     },
   },
@@ -43,7 +51,11 @@ const resources = {
       add: 'Ongeraho',
       delete: 'Siba',
       lang: 'Indimi',
-      join: 'Dufatanye mu gukora amahirwe no gusenya imbogamizi ku bakobwa bo mu bice byi icyaro. Hamwe, dushobora gukora uburezi buboneka kuri bose.'
+      join: 'Dufatanye mu gukora amahirwe no gusenya imbogamizi ku bakobwa bo mu bice byi icyaro. Hamwe, dushobora gukora uburezi buboneka kuri bose.',
+      home: 'Ahabanza',
+      username: `izina ukoresha`,
+      email: 'Imeri',
+      password:'Ijambo Banga'
       // more Kinyarwanda words....
     },
   },
