@@ -12,7 +12,7 @@ const LanguageToggle: React.FC = () => {
   };
 
   return (
-    <div className="relative">
+    <div className="relative p-2">
       <button
         onClick={() => setIsDropdownOpen((prev) => !prev)}
         className="flex items-center space-x-2"

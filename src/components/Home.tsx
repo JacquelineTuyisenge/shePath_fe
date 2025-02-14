@@ -9,37 +9,70 @@ import Programs from "./Programs";
 import heroPic from '../assets/heroPic.svg'
 import AboutPage from "./About";
 import { fadeInUp, fadeInLeft, fadeInRight} from "./motionVariants";
+import {Menu, X} from 'lucide-react';
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
+  const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
     <div className="min-h-screen bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text">
       <nav className="bg-light-gray dark:bg-dark-gray p-4 flex justify-between items-center shadow-md">
-        <ul className="flex space-x-6 items-center">
-          <h1 className="text-light-primary font-bold text-2xl">ShePath</h1>
-          <li className="hover:text-light-primary cursor-pointer">{t("home")}</li>
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li className="hover:text-light-primary cursor-pointer">Programs</li>
-          <li className="hover:text-light-primary cursor-pointer">Contact</li>
-        </ul>
-        <ul className="flex space-x-6 items-center">
+        <div className="flex justify-between items-center">
+          <div className="flex justify-center items-center">
+            <h1 className="text-light-primary font-bold px-2 text-2xl">ShePath</h1>
+            {/* hamburg menu */}
+            <button onClick={toggleMenu} className="md:hidden text-light-primary">
+              {isOpen ? <X /> : <Menu />}
+            </button>
+          </div>
+          <ul className="hidden md:flex space-x-6 items-center">
+            <li className="hover:text-light-primary cursor-pointer">{t("home")}</li>
+            <li><Link to="/about">About</Link></li>
+            <li className="hover:text-light-primary cursor-pointer">Programs</li>
+            <li className="hover:text-light-primary cursor-pointer">Contact</li>
+          </ul>
+        </div>
+          {/* Theme & Language Toggle + Login Button (Desktop) */}
+        <div className="hidden md:flex space-x-4">
           <LanguageToggle />
           <ThemeToggle />
-          <button
+          <button 
             onClick={openLoginModal}
-            className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition-colors duration-200"
+            className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
           >
             Login
           </button>
-        </ul>
+        </div>
       </nav>
+
+      {isOpen && (
+        <ul className="md:hidden flex flex-col bg-light-gray dark:bg-dark-gray p-4 space-x-2 mt-4">
+            <div className="flex justify-around">
+              <ul className="flex flex-col space-y-2">
+                <li className="hover:text-light-primary cursor-pointer">{t("home")}</li>
+                <li><Link to="/about">About</Link></li>
+                <li className="hover:text-light-primary cursor-pointer">Programs</li>
+              </ul>
+              <ul className="flex flex-col space-y-2">
+                <li className="hover:text-light-primary cursor-pointer">Contact</li>
+                <LanguageToggle />
+                <ThemeToggle />
+              </ul>
+            </div>
+            <button 
+              onClick={openLoginModal}
+              className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
+            >
+              Login
+            </button>
+          </ul>
+        )}
 
       <motion.section
         className="p-2 m-6 flex flex-col-reverse md:flex-row items-center justify-between" {...fadeInRight}>
