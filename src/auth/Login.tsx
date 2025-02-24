@@ -1,9 +1,11 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axiosInstance from "../axiosInstance";
 import { useTranslation } from 'react-i18next';
 
 function Login() {
     const { t } = useTranslation();
+    const navigate = useNavigate();
     const [isLogin, setIsLogin] = useState(false);
     const [formData, setFormData] = useState({
         firstName: "",
@@ -27,17 +29,41 @@ function Login() {
 
         try {
             if (isLogin) {
-                const {data} = await axiosInstance.post('/auth/login', {
+                const {data} = await axiosInstance.post('/api/auth/login', {
                     email: formData.email,
                     password: formData.password
                 });
                 console.log('login is successful',data);
+
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('role', data.user.role);
+                localStorage.setItem('profile', JSON.stringify(data.profile));
+
+                //redirections
+               switch(data.user.role){
+                case 'Admin':
+                    navigate('/admin');
+                    break;
+                case 'Learner':
+                    navigate('/learner');
+                    break;
+                case 'Guide-Mentor':
+                    navigate('/mentor');
+                    break;
+                case 'Parent':
+                    navigate('/parent');
+                    break;
+                default:
+                    navigate('/');
+                    break;
+               }
+
             } else {
                 if (formData.password !== formData.confirmPassword) {
                     setError(t("passwordMismatch"));
                     return;
                 }
-                  const { data } = await axiosInstance.post("/auth/register", formData);
+                  const { data } = await axiosInstance.post("/api/auth/register", formData);
                   console.log("Registration Successful:", data);
             }
         } catch (error: any) {
@@ -78,20 +104,21 @@ function Login() {
                                 required
                             />
                         </div>
+                        <div className="mb-4">
+                            <label className="block text-light-text dark:text-dark-text mb-1">{t('username')}</label>
+                            <input
+                                type="text"
+                                name="userName"
+                                value={formData.userName}
+                                onChange={handleChange}
+                                className="w-full px-4 py-2 border rounded-md bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray text-sm"
+                                placeholder="Username"
+                                required
+                            />
+                        </div>
+                        
                     </>
                 )}
-                <div className="mb-4">
-                    <label className="block text-light-text dark:text-dark-text mb-1">{t('username')}</label>
-                    <input
-                        type="text"
-                        name="userName"
-                        value={formData.userName}
-                        onChange={handleChange}
-                        className="w-full px-4 py-2 border rounded-md bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray text-sm"
-                        placeholder="Username"
-                        required
-                    />
-                </div>
                 <div className="mb-4">
                     <label className="block text-light-text dark:text-dark-text mb-1">{t('email')}</label>
                     <input

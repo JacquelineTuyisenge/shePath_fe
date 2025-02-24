@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import LanguageToggle from "./Translate";
@@ -9,12 +9,21 @@ import Programs from "./Programs";
 import heroPic from '../assets/heroPic.svg'
 import AboutPage from "./About";
 import { fadeInUp, fadeInLeft, fadeInRight} from "./motionVariants";
-import {Menu, X} from 'lucide-react';
+import {Menu, X, UserCircle} from 'lucide-react';
+
 
 const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (token) {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
@@ -42,36 +51,44 @@ const HomePage: React.FC = () => {
         <div className="hidden md:flex space-x-4">
           <LanguageToggle />
           <ThemeToggle />
-          <button 
+          {isAuthenticated ? (
+            <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+          ) : (
+            <button 
             onClick={openLoginModal}
             className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
           >
             Login
           </button>
+          )}
         </div>
       </nav>
 
       {isOpen && (
-        <ul className="md:hidden flex flex-col bg-light-gray dark:bg-dark-gray p-4 space-x-2 mt-4">
-            <div className="flex justify-around">
-              <ul className="flex flex-col space-y-2">
+        <div className="md:hidden">
+            <div className="flex flex-col w-40 bg-light-gray dark:bg-dark-gray p-2 space-x-2 mt-4 items-start justify-center">
+              <ul className="space-y-2 text-justify px-6">
                 <li className="hover:text-light-primary cursor-pointer">{t("home")}</li>
                 <li><Link to="/about">About</Link></li>
                 <li className="hover:text-light-primary cursor-pointer">Programs</li>
-              </ul>
-              <ul className="flex flex-col space-y-2">
                 <li className="hover:text-light-primary cursor-pointer">Contact</li>
+              </ul>
+              <ul className="flex text-justify">
                 <LanguageToggle />
                 <ThemeToggle />
+                {isAuthenticated ? (
+                <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+                ) : (
+                  <button 
+                  onClick={openLoginModal}
+                  className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
+                >
+                  Login
+                </button>
+                )}
               </ul>
             </div>
-            <button 
-              onClick={openLoginModal}
-              className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
-            >
-              Login
-            </button>
-          </ul>
+        </div>
         )}
 
       <motion.section
