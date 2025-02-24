@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key, Lock } from "lucide-react";
-import ThemeToggle from "./Theme";
+import ThemeToggle from "../components/Theme";
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");

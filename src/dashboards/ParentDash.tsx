@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { BookOpen, Users, MessageSquare, Menu, X } from "lucide-react";
-import ThemeToggle from "./Theme";
+import ThemeToggle from "../components/Theme";
 
 const ParentDashboard = () => {
   const [activeTab, setActiveTab] = useState("awareness");

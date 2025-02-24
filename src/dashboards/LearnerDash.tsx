@@ -2,7 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { User, BookOpen, Award, MessageSquare, Settings, Menu, X } from "lucide-react";
 import { useState } from "react";
-import ThemeToggle from "./Theme";
+import ThemeToggle from "../components/Theme";
 
 const LearnerDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");

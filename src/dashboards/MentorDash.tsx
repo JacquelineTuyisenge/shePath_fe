@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { User, MessageSquare, BookOpen, Users, ClipboardList, Settings, Menu, X } from "lucide-react";
-import ThemeToggle from "./Theme";
+import ThemeToggle from "../components/Theme";
 
 const MentorDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
