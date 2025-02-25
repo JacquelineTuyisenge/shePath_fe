@@ -1,18 +1,31 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { getUsers } from "../features/userSlice";
+import { getRoles } from "../features/roleSlice";
+import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key, Lock } from "lucide-react";
 import ThemeToggle from "../components/Theme";
+import { AppDispatch, RootState } from "../store";
 
 const AdminDashboard = () => {
+  const useAppDispatch = () => useDispatch<AppDispatch>();
+  const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+
+  const dispatch = useAppDispatch();
+  const { users, loading, error } = useAppSelector((state: any) => state.users);
+  const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
+
+  useEffect(() => {
+    dispatch(getUsers());
+  }, [dispatch]);
+
+  useEffect(() => {
+    dispatch(getRoles());
+  }, [dispatch]);
+
+
   const [activeTab, setActiveTab] = useState("overview");
   const [SidebarOpen, setSidebarOpen] = useState(false);
-
-  // Hardcoded data for now
-  const users = [
-    { id: 1, name: "Alice", role: "Learner", status: "Active" },
-    { id: 2, name: "John", role: "Mentor", status: "Active" },
-    { id: 3, name: "Jane", role: "Parent", status: "Inactive" },
-  ];
 
   const courses = [
     { id: 1, title: "Math 101", instructor: "Mr. Smith", status: "Active" },
@@ -22,12 +35,6 @@ const AdminDashboard = () => {
   const programs = [
     { id: 1, name: "STEM Program", description: "Science, Technology, Engineering, and Math.", status: "Ongoing" },
     { id: 2, name: "Arts Program", description: "Creative Arts and Literature.", status: "Completed" },
-  ];
-
-  const roles = [
-    { id: 1, name: "Admin", permissions: "Full Access" },
-    { id: 2, name: "Mentor", permissions: "View and Edit Courses" },
-    { id: 3, name: "Learner", permissions: "Access Courses" },
   ];
 
   return (
@@ -121,23 +128,32 @@ const AdminDashboard = () => {
         {activeTab === "users" && (
           <section className="text-justify dark:text-dark-text">
             <h1 className="text-2xl font-bold mb-4 text-center">Manage Users</h1>
-            <table className="w-full table-auto border-collapse text-sm">
+            {loading ? (
+              <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+            ) : error ? (
+              <p className="text-red-600 dark:text-red-700">{error}</p>
+            ) : (
+              <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
                   <th className="p-3">ID</th>
-                  <th className="p-3">Name</th>
+                  <th className="p-3">Email</th>
+                  <th className="p-3">First Name</th>
+                  <th className="p-3">Last Name</th>
                   <th className="p-3">Role</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map(user => (
-                  <tr key={user.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{user.id}</td>
-                    <td className="p-3">{user.name}</td>
-                    <td className="p-3">{user.role}</td>
-                    <td className="p-3">{user.status}</td>
+                {users.map((item: any) => (
+                  <tr key={item.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
+                    <td className="p-3">{item.id}</td>
+                    <td className="p-3">{item.email}</td>
+                    <td className="p-3">{item.firstName}</td>
+                    <td className="p-3">{item.lastName}</td>
+                    <td className="p-3">{item.role}</td>
+                    <td className="p-3">{item.status}</td>
                     <td className="p-3 flex gap-2">
                       <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
                         <Edit className="w-4 h-4" />
@@ -150,6 +166,7 @@ const AdminDashboard = () => {
                 ))}
               </tbody>
             </table>
+            )}
           </section>
         )}
 
@@ -157,21 +174,24 @@ const AdminDashboard = () => {
         {activeTab === "roles" && (
           <section className="text-justify dark:text-dark-text">
             <h1 className="text-2xl font-bold mb-4 text-center">Manage Roles</h1>
-            <table className="w-full table-auto border-collapse text-sm">
+            {roleLoading ? (
+              <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+            ) : roleError ? (
+              <p className="text-red-600 dark:text-red-700">{roleError}</p>
+            ): (
+              <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
                   <th className="p-3">ID</th>
                   <th className="p-3">Role Name</th>
-                  <th className="p-3">Permissions</th>
                   <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {roles.map(role => (
+                {roles.map((role: any) => (
                   <tr key={role.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
                     <td className="p-3">{role.id}</td>
                     <td className="p-3">{role.name}</td>
-                    <td className="p-3">{role.permissions}</td>
                     <td className="p-3 flex gap-2">
                       <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
                         <Edit className="w-4 h-4" />
@@ -184,6 +204,7 @@ const AdminDashboard = () => {
                 ))}
               </tbody>
             </table>
+            )}
           </section>
         )}
 
