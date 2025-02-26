@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { getUsers } from "../features/userSlice";
-import { getRoles } from "../features/roleSlice";
+import { getRoles} from "../features/roleSlice";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
 import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key, Lock } from "lucide-react";
 import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
+import AddRoleModal from "../modals/AddRole";
+import { deleteRole } from "../features/roleSlice";
+import EditRoleModal from "../modals/EditRoleModal";
+import AssignRoleModal from "../modals/AssignRole";
 
 const AdminDashboard = () => {
   const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -14,15 +17,23 @@ const AdminDashboard = () => {
   const dispatch = useAppDispatch();
   const { users, loading, error } = useAppSelector((state: any) => state.users);
   const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
-
-  useEffect(() => {
-    dispatch(getUsers());
-  }, [dispatch]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedRole, setSelectedRole] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
     dispatch(getRoles());
   }, [dispatch]);
 
+  useEffect(() => {
+    dispatch(getUsers());
+  }, [dispatch]);
+
+
+  const handleDelete = (id: string) => {
+    dispatch(deleteRole(id));
+  };
 
   const [activeTab, setActiveTab] = useState("overview");
   const [SidebarOpen, setSidebarOpen] = useState(false);
@@ -153,9 +164,15 @@ const AdminDashboard = () => {
                     <td className="p-3">{item.firstName}</td>
                     <td className="p-3">{item.lastName}</td>
                     <td className="p-3">{item.role}</td>
-                    <td className="p-3">{item.status}</td>
+                    <td className="p-3">{item.status? "Active" : "Inactive"}</td>
                     <td className="p-3 flex gap-2">
-                      <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
+                      <button 
+                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+                        onClick={() => {
+                          setSelectedUser(item);
+                          setIsModalOpen(true);
+                        }}
+                        >
                         <Edit className="w-4 h-4" />
                       </button>
                       <button className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition">
@@ -167,13 +184,29 @@ const AdminDashboard = () => {
               </tbody>
             </table>
             )}
+
+            {/* Assign Role Modal */}
+            {isModalOpen && selectedUser && (
+              <AssignRoleModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                user={selectedUser}
+              />
+            )}
+
           </section>
         )}
 
         {/* Roles Tab */}
         {activeTab === "roles" && (
           <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Manage Roles</h1>
+            <div className="flex justify-between items-center">
+                <h1 className="text-2xl font-bold mb-4 text-center">Manage Roles</h1>
+                <button 
+                  onClick={() => setIsModalOpen(true)}
+                  className="bg-dark-secondary text-white p-2 rounded-md hover:bg-pink-400 transition">Add Role</button>
+            </div>
+
             {roleLoading ? (
               <p className="text-gray-600 dark:text-gray-300">Loading...</p>
             ) : roleError ? (
@@ -193,10 +226,19 @@ const AdminDashboard = () => {
                     <td className="p-3">{role.id}</td>
                     <td className="p-3">{role.name}</td>
                     <td className="p-3 flex gap-2">
-                      <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
+                      <button 
+                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+                        onClick={() => {
+                          setSelectedRole(role); 
+                          setIsEditModalOpen(true);
+                        }}
+                        >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition">
+                      <button 
+                        className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition"
+                        onClick={() => handleDelete(role.id)}
+                        >
                         <Trash className="w-4 h-4" />
                       </button>
                     </td>
@@ -205,6 +247,13 @@ const AdminDashboard = () => {
               </tbody>
             </table>
             )}
+
+            {/* Add Role Modal */}
+            <AddRoleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
+            {/* Edit Role Modal */}
+            
+            {isEditModalOpen && <EditRoleModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} role={selectedRole} />}
           </section>
         )}
 
