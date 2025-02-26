@@ -1,50 +1,72 @@
-# React + TypeScript + Vite
+# shePath - Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**shePath** is a web application designed to empower women by providing resources, support, and tools to help them achieve their personal and professional goals. The frontend of the application is built with React and TypeScript, ensuring a modern and dynamic user experience.
 
-Currently, two official plugins are available:
+## Table of Contents
+- [Description](#description)
+- [GitHub Repository](#github-repository)
+- [Getting Started](#getting-started)
+- [Designs](#designs)
+- [Deployment Plan](#deployment-plan)
+- [Contributing](#contributing)
+- [License](#license)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Description
 
-## Expanding the ESLint configuration
+**shePath** is a platform focused on creating opportunities for women in various fields. It helps them connect, share experiences, and access tools for personal growth and career development. This project serves as the frontend for that platform, providing an intuitive user interface and responsive design.
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Developed with React, TypeScript, and TailwindCSS, the frontend ensures scalability and easy maintenance.
 
-- Configure the top-level `parserOptions` property like this:
+## GitHub Repository
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
-```
+Find the my frontend repository here:
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+[**GitHub - shePath Frontend**](https://github.com/JacquelineTuyisenge/shePath_fe/tree/develop)
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+## Getting Started
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### Prerequisites
+
+Ensure you have the following installed:
+- **Node.js** (version 14 or later)
+- **npm** (Node package manager)
+- **Git** (for cloning the repository)
+
+### Setup
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/JacquelineTuyisenge/shePath_fe.git
+   ```
+2. **Navigate to the project directory:**
+
+   ```bash
+   cd shePath_fe
+    ```
+
+3. **Install dependencies:**
+    ```bash
+    npm i
+    ```
+4. **start server;**
+    ```bash
+    npm run dev
+    ```
+
+### ENv Variables
+create **.env** file at the root of project and add the environment variables
+
+### Designs
+
+- Figma Mockups:
+- Circuit Diagram: 
+- App Screenshots: 
+
+### Deployment plan
+Vercel for frontend deployment
+
+### Contributor
+Jacqueline Tuyisenge
+
+### Licence

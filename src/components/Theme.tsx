@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import moon from '../assets/moon.svg';
-import sun from '../assets/sun.svg';
+import { FaSun, FaMoon } from 'react-icons/fa';
 
 const ThemeToggle: React.FC = () => {
   const {t} = useTranslation();
@@ -26,11 +25,7 @@ const ThemeToggle: React.FC = () => {
       onClick={toggleTheme}
       className="p-2 rounded"
     >
-      <img
-        src={theme === 'light' ? moon : sun}
-        alt={theme === 'light' ? t('darkMode') : t('lightMode')}
-        className="w-6 h-6"
-      />
+    {theme === 'light' ? <FaMoon size={20} /> : <FaSun size={20} />}
     </button>
   );
 };

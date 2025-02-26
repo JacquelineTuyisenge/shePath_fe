@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import earth from '../assets/earth.svg';
+import { FaGlobe } from 'react-icons/fa'
 
 const LanguageToggle: React.FC = () => {
   const { i18n } = useTranslation();
@@ -12,16 +12,14 @@ const LanguageToggle: React.FC = () => {
   };
 
   return (
-    <div className="relative">
-      {/* Trigger Button */}
+    <div className="relative p-2">
       <button
         onClick={() => setIsDropdownOpen((prev) => !prev)}
-        className="flex items-center space-x-2 px-4 py-2 bg-gray-400 rounded"
+        className="flex items-center space-x-2"
       >
-        <img src={earth} alt="Language Toggle" className="w-5 h-5" />
+        <FaGlobe size={20} />
       </button>
 
-      {/* Dropdown Menu */}
       {isDropdownOpen && (
         <div className="absolute right-0 mt-2 rounded w-40 flex">
           <button
