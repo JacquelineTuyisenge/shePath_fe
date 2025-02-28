@@ -9,6 +9,7 @@ export interface User {
     lastName: string;
     role: string;
     status: string;
+    createdAt: string;
 }
 
 interface UserState {

@@ -2,6 +2,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { User, BookOpen, Award, MessageSquare, Settings, Menu, X } from "lucide-react";
 import { useState } from "react";
+import LogoutButton from "../auth/Logout";
 import ThemeToggle from "../components/Theme";
 
 const LearnerDashboard = () => {
@@ -87,6 +88,12 @@ const LearnerDashboard = () => {
         </ul>
         <div className="mt-6 dark:text-dark-text">
           <ThemeToggle />
+        </div>
+        <div>
+          <LogoutButton />
+        </div>
+        <div className="p-2 mt-4">
+          <Link to="/" className="text-md font-bold text-light-primary mt-6 dark:text-dark-text dark:hover:text-light-secondary">Exit Dashboard</Link>
         </div>
       </aside>
 

@@ -1,14 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { getUsers } from "../features/userSlice";
-import { getRoles} from "../features/roleSlice";
+import Card from "../components/Card";
+
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key, Lock } from "lucide-react";
+import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key, Lock, Car } from "lucide-react";
 import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
+
 import AddRoleModal from "../modals/AddRole";
+import { getUsers } from "../features/userSlice";
+import { getRoles} from "../features/roleSlice";
 import { deleteRole } from "../features/roleSlice";
 import EditRoleModal from "../modals/EditRoleModal";
 import AssignRoleModal from "../modals/AssignRole";
+
+import LogoutButton from "../auth/Logout";
+import UserExpansionTrend from "../features/UserChart";
+import { Link } from "react-router-dom";
+
 
 const AdminDashboard = () => {
   const useAppDispatch = () => useDispatch<AppDispatch>();
@@ -69,7 +77,7 @@ const AdminDashboard = () => {
           <X className="w-6 h-6 dark:text-dark-text" />
         </button>
 
-        <h2 className="text-xl font-bold text-light-primary mb-6">Admin Dashboard</h2>
+        <h2 className="text-md font-bold text-light-primary mb-6">Admin Dashboard</h2>
         <ul className="space-y-4">
           <li>
             <button
@@ -123,6 +131,12 @@ const AdminDashboard = () => {
         <div className="mt-6 dark:text-dark-text">
           <ThemeToggle />
         </div>
+        <div>
+          <LogoutButton />
+        </div>
+        <div className="p-2 mt-4">
+          <Link to="/" className="text-md font-bold text-light-primary mt-6 dark:text-dark-text dark:hover:text-light-secondary">Exit Dashboard</Link>
+        </div>
       </aside>
 
       {/* Main Content */}
@@ -130,8 +144,15 @@ const AdminDashboard = () => {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Admin Dashboard Overview</h1>
-            <p className="text-gray-600 dark:text-gray-300">Manage users, courses, and programs effectively.</p>
+            <h1 className="text-2xl font-bold m-5 text-center">Admin Dashboard Overview</h1>
+            <div className="m-4 flex flex-wrap justify-around items-center gap-4">
+              <Card title="Users" value={users.length} icon={<Users />} />
+              <Card title="Courses" value={courses.length} icon={<BookOpen />} />
+              <Card title="Programs" value={programs.length} icon={<Award />} />
+            </div>
+            <div className="mt-10 text-center">
+              <UserExpansionTrend />
+            </div>
           </section>
         )}
 
