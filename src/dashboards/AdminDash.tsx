@@ -7,7 +7,9 @@ import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
 
 import AddRoleModal from "../modals/AddRole";
+import AddCourseModal from "../modals/AddCourse";
 import { getUsers } from "../features/userSlice";
+import { fetchCourses } from "../features/courseSlice";
 import { getRoles} from "../features/roleSlice";
 import { deleteRole } from "../features/roleSlice";
 import EditRoleModal from "../modals/EditRoleModal";
@@ -24,9 +26,11 @@ const AdminDashboard = () => {
 
   const dispatch = useAppDispatch();
   const { users, loading, error } = useAppSelector((state: any) => state.users);
+  const {courses} = useAppSelector((state: any) => state.courses);
   const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
@@ -38,6 +42,10 @@ const AdminDashboard = () => {
     dispatch(getUsers());
   }, [dispatch]);
 
+  useEffect(() => {
+    dispatch(fetchCourses());
+  }, [dispatch]);
+
 
   const handleDelete = (id: string) => {
     dispatch(deleteRole(id));
@@ -46,10 +54,10 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [SidebarOpen, setSidebarOpen] = useState(false);
 
-  const courses = [
-    { id: 1, title: "Math 101", instructor: "Mr. Smith", status: "Active" },
-    { id: 2, title: "Science 101", instructor: "Ms. Johnson", status: "Inactive" },
-  ];
+  // const courses = [
+  //   { id: "1vxzaertyuìtrghu76rdx", title: "Math 101", description: "math basic courses", category: "Financial literacy" },
+  //   { id: "27tfvbju8iuytredghnbg", title: "Vocabulary 101", description: "English basic courses", category: "Basic Education" },
+  // ];
 
   const programs = [
     { id: 1, name: "STEM Program", description: "Science, Technology, Engineering, and Math.", status: "Ongoing" },
@@ -282,23 +290,31 @@ const AdminDashboard = () => {
         {activeTab === "courses" && (
           <section className="text-justify dark:text-dark-text">
             <h1 className="text-2xl font-bold mb-4 text-center">Manage Courses</h1>
+            <button
+              onClick={() => setIsAddCourseModalOpen(true)}
+              className="bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition"
+            >
+              Add Course
+            </button>
             <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
                   <th className="p-3">ID</th>
                   <th className="p-3">Title</th>
-                  <th className="p-3">Instructor</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">description</th>
+                  <th className="p-3">Content</th>
+                  <th className="p-3">Category</th>
                   <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {courses.map(course => (
+                {courses.map((course: any) => (
                   <tr key={course.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
                     <td className="p-3">{course.id}</td>
                     <td className="p-3">{course.title}</td>
-                    <td className="p-3">{course.instructor}</td>
-                    <td className="p-3">{course.status}</td>
+                    <td className="p-3">{course.description}</td>
+                    <td className="p-3">{course.content}</td>
+                    <td className="p-3">{course.categoryId}</td>
                     <td className="p-3 flex gap-2">
                       <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
                         <Edit className="w-4 h-4" />
@@ -311,6 +327,9 @@ const AdminDashboard = () => {
                 ))}
               </tbody>
             </table>
+
+            <AddCourseModal isOpen={isAddCourseModalOpen} onClose={() => setIsAddCourseModalOpen(false)} />
+
           </section>
         )}
 

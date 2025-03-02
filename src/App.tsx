@@ -7,6 +7,8 @@ import AdminDashboard from './dashboards/AdminDash';
 import LearnerDashboard from './dashboards/LearnerDash';
 import MentorDashboard from './dashboards/MentorDash';
 import ParentDashboard from './dashboards/ParentDash';
+import CoursesList from './components/Courses';
+import CourseDetails from './components/CourseDetails';
 import ProtectedRoute from './auth/ProtectedRoute';
 import NotFound from './features/NotFound';
 
@@ -17,6 +19,11 @@ function App() {
         <Route index element={<HomePage />}/>
         <Route path='/login' element={<Login />}/>
         <Route path='/about' element={<AboutPage />} />
+
+        <Route path='/courses'>
+          <Route index element={<CoursesList />} />
+          <Route path=':id' element={<CourseDetails />} />
+        </Route>
 
         {/* protected routes */}
         <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>

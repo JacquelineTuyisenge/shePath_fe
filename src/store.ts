@@ -1,10 +1,15 @@
 import { configureStore } from "@reduxjs/toolkit";
 import usersReducer from "./features/userSlice";
 import roleReducer from "./features/roleSlice";
+import courseSlice from "./features/courseSlice";
+import courseCategortReducer from "./features/courceCategorySlice";
+
 export const store = configureStore({
     reducer: {
         users: usersReducer,
-        roles: roleReducer
+        roles: roleReducer,
+        courses: courseSlice,
+        categories: courseCategortReducer,
     },
 });
 
