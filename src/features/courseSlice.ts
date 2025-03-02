@@ -40,7 +40,7 @@ export const fetchCourses = createAsyncThunk("courses/fetchCourses", async (_, {
     try {
         const response = await axiosInstance.get("/api/courses/");
         return response.data.data;
-        console.log("hgfrtyuikjhgfrt6ujhbv", response.data.data)
+        // console.log("hgfrtyuikjhgfrt6ujhbv", response.data.data)
     } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || "Failed to load courses");
     }
