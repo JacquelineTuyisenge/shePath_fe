@@ -4,9 +4,9 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchCourseDetails } from "../features/courseSlice";
 import { RootState, AppDispatch } from "../store";
 // import pic from "../assets/Hero-bg.png";
-import videoPlaceholder from "../assets/video.mp4"; // Replace with your actual video file path
-import audioPlaceholder from "../assets/audio.mp4"; // Replace with your actual audio file path
-// import { useTranslation } from "react-i18next"; // Import the useTranslation hook
+import videoPlaceholder from "../assets/video.mp4"; 
+import audioPlaceholder from "../assets/audio.mp4"; 
+// import { useTranslation } from "react-i18next"; 
 // import axiosInstance from "../axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
