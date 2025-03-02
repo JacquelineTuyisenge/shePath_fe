@@ -8,7 +8,7 @@ import videoPlaceholder from "../assets/video.mp4";
 import audioPlaceholder from "../assets/audio.mp4"; 
 // import { useTranslation } from "react-i18next"; 
 // import axiosInstance from "../axiosInstance";
-import { useNavigate } from "react-router-dom";
+// import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 
 function CourseDetails() {
@@ -16,10 +16,10 @@ function CourseDetails() {
     const { loading, singleCourse, error } = useSelector((state: RootState) => state.courses);
     const dispatch = useDispatch<AppDispatch>();
     const {t} = useTranslation();
-    const navigate = useNavigate();
+    // const navigate = useNavigate();
     const { id } = useParams<{ id: string }>();
 
-    const categoryName = 
+    // const categoryName = 
 
     useEffect(() => {
         if (id) {
