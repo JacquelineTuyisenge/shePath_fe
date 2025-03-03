@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { User, MessageSquare, BookOpen, Users, ClipboardList, Settings, Menu, X } from "lucide-react";
 import ThemeToggle from "../components/Theme";
+import LogoutButton from "../auth/Logout";
+import { Link } from "react-router-dom";
 
 const MentorDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
@@ -92,6 +94,12 @@ const MentorDashboard = () => {
         </ul>
         <div className="mt-6 dark:text-dark-text">
           <ThemeToggle />
+        </div>
+        <div>
+          <LogoutButton />
+        </div>
+        <div className="p-2 mt-4">
+          <Link to="/" className="text-md font-bold text-light-primary mt-6 dark:text-dark-text dark:hover:text-light-secondary">Exit Dashboard</Link>
         </div>
       </aside>
 

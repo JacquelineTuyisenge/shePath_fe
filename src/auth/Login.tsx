@@ -65,6 +65,16 @@ function Login() {
                 }
                   const { data } = await axiosInstance.post("/api/auth/register", formData);
                   console.log("Registration Successful:", data);
+                  
+                  setIsLogin(true);
+                  setFormData({
+                      firstName: "",
+                      lastName: "",
+                      userName: "",
+                      email: "",
+                      password: "",
+                      confirmPassword: "",
+                  });
             }
         } catch (error: any) {
             setError(error.response?.data?.message || 'Something went wrong');

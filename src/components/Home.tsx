@@ -5,11 +5,11 @@ import LanguageToggle from "./Translate";
 import ThemeToggle from "./Theme";
 import Login from "../auth/Login";
 import { Link } from "react-router-dom";
-import Programs from "./Programs";
 import heroPic from '../assets/heroPic.svg'
 import AboutPage from "./About";
 import { fadeInUp, fadeInLeft, fadeInRight} from "./motionVariants";
 import {Menu, X, UserCircle} from 'lucide-react';
+import CoursesList from "./Courses";
 
 
 const HomePage: React.FC = () => {
@@ -30,14 +30,15 @@ const HomePage: React.FC = () => {
   const toggleMenu = () => setIsOpen(!isOpen);
 
   return (
-    <div className="min-h-screen bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text">
+    <div className="min-h-screen w-full bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text">
       <nav className="bg-light-gray dark:bg-dark-gray p-4 flex justify-between items-center shadow-md">
         <div className="flex justify-between items-center">
           <div className="flex justify-center items-center">
             <h1 className="text-light-primary font-bold px-2 text-2xl">ShePath</h1>
             {/* hamburg menu */}
             <button onClick={toggleMenu} className="md:hidden text-light-primary">
-              {isOpen ? <X /> : <Menu />}
+              {isOpen ? <X /> : 
+              <Menu />}
             </button>
           </div>
           <ul className="hidden md:flex space-x-6 items-center">
@@ -136,8 +137,8 @@ const HomePage: React.FC = () => {
       {/* About Section */}
       <AboutPage />
 
-      {/* Programs Section */}
-      <Programs />
+      {/* Courses Section */}
+      <CoursesList />
 
       {/* Footer */}
       <footer className="p-6 bg-light-gray dark:bg-dark-gray text-center">
