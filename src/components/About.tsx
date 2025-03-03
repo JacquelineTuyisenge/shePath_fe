@@ -1,4 +1,3 @@
-import React from "react";
 import { motion } from "framer-motion";
 import { FaHeart, FaUsers, FaGraduationCap } from "react-icons/fa";
 import heroAbout from '../assets/heroAbout.svg';

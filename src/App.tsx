@@ -1,4 +1,3 @@
-// import React from 'react'
 import HomePage from './components/Home';
 import { Routes, Route } from 'react-router-dom';
 import Login from './auth/Login';
