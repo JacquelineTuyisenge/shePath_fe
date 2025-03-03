@@ -1,8 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import {useForm} from "react-hook-form";
 import {AppDispatch, RootState} from "../store";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import {updateRole,getRoles,clearMessage} from "../features/roleSlice";
+import {updateRole, clearMessage} from "../features/roleSlice";
 
 interface EditRoleModalProps {
     isOpen: boolean;

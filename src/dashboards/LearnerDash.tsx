@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { User, BookOpen, Award, MessageSquare, Settings, Menu, X } from "lucide-react";
 import { useState } from "react";

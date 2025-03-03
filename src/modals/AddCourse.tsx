@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppDispatch, RootState } from "../store";
-import { addCourse, fetchCourseDetails, fetchCourses } from "../features/courseSlice";
+import { addCourse, fetchCourses } from "../features/courseSlice";
 import { fetchCourseCategories } from "../features/courceCategorySlice";
 
 interface AddCourseModalProps {

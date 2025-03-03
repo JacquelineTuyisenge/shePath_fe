@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import Card from "../components/Card";
 
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key, Lock, Car } from "lucide-react";
+import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key} from "lucide-react";
 import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
 
