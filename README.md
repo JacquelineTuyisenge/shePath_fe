@@ -54,17 +54,18 @@ Ensure you have the following installed:
     npm run dev
     ```
 
-### ENv Variables
+### Env Variables
 create **.env** file at the root of project and add the environment variables
 
 ### Designs
 
-- Figma Mockups:
-- Circuit Diagram: 
 - App Screenshots: 
+<br/>
+<img src="image.png" /> <img src="image2.png" />
 
 ### Deployment plan
 Vercel for frontend deployment
+Link: https://she-path-front.vercel.app/
 
 ### Contributor
 Jacqueline Tuyisenge

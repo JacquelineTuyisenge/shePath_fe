@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import LanguageToggle from "./Translate";
+import Footer from "./Footer";
 import ThemeToggle from "./Theme";
 import Login from "../auth/Login";
 import { Link } from "react-router-dom";
@@ -17,17 +18,31 @@ const HomePage: React.FC = () => {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
     if (token) {
       setIsAuthenticated(true);
+      setUserRole(role);
     }
   }, []);
 
   const openLoginModal = () => setIsLoginModalOpen(true);
   const closeLoginModal = () => setIsLoginModalOpen(false);
   const toggleMenu = () => setIsOpen(!isOpen);
+
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case "Admin": return "/admin";
+      case "Learner": return "/learner";
+      case "Mentor": return "/mentor";
+      case "Parent": return "/parent";
+      default: return "/";
+    }
+  };
 
   return (
     <div className="min-h-screen w-full bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text">
@@ -53,7 +68,12 @@ const HomePage: React.FC = () => {
           <LanguageToggle />
           <ThemeToggle />
           {isAuthenticated ? (
+            <div className="flex items-center space-x-4">
+            <Link to={getDashboardRoute()} className="px-6 py-2 bg-light-primary text-white rounded hover:transition-transform duration-300 transform hover:scale-105">
+              Dashboard
+            </Link>
             <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+          </div>
           ) : (
             <button 
             onClick={openLoginModal}
@@ -77,8 +97,14 @@ const HomePage: React.FC = () => {
               <ul className="flex text-justify">
                 <LanguageToggle />
                 <ThemeToggle />
+              </ul>
                 {isAuthenticated ? (
-                <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+                  <div className="flex gap-2 m-2">
+                  <Link to={getDashboardRoute()} className="p-2 bg-light-primary text-white rounded hover:bg-blue-600 transition">
+                    Dashboard
+                  </Link>
+                  <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+                </div>
                 ) : (
                   <button 
                   onClick={openLoginModal}
@@ -87,7 +113,6 @@ const HomePage: React.FC = () => {
                   Login
                 </button>
                 )}
-              </ul>
             </div>
         </div>
         )}
@@ -141,9 +166,7 @@ const HomePage: React.FC = () => {
       <CoursesList />
 
       {/* Footer */}
-      <footer className="p-6 bg-light-gray dark:bg-dark-gray text-center">
-        <p>&copy; {new Date().getFullYear()} ShePath. All Rights Reserved.</p>
-      </footer>
+      <Footer />
     </div>
   );
 };
