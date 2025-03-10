@@ -5,16 +5,18 @@ import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key} from "lucide-react";
 import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
-
 import AddRoleModal from "../modals/AddRole";
 import AddCourseModal from "../modals/AddCourse";
+import AddCategoryModel from "../modals/AddCategory";
+import EditCourseModal from "../modals/EditCourseModal";
+import EditCatModel from "../modals/EditCategory";
 import { getUsers } from "../features/userSlice";
-import { fetchCourses } from "../features/courseSlice";
+import { deleteCourse, fetchCourses } from "../features/courseSlice";
+import { deleteCourseCategory, fetchCourseCategories } from "../features/courceCategorySlice";
 import { getRoles} from "../features/roleSlice";
 import { deleteRole } from "../features/roleSlice";
 import EditRoleModal from "../modals/EditRoleModal";
 import AssignRoleModal from "../modals/AssignRole";
-
 import LogoutButton from "../auth/Logout";
 import UserExpansionTrend from "../features/UserChart";
 import { Link } from "react-router-dom";
@@ -27,37 +29,43 @@ const AdminDashboard = () => {
   const dispatch = useAppDispatch();
   const { users, loading, error } = useAppSelector((state: any) => state.users);
   const {courses} = useAppSelector((state: any) => state.courses);
+      // const { categories = [] } = useSelector((state: RootState) => state.categories);
+  const {categories = [], loading: categoryLoading} = useAppSelector((state: any) => state.categories);
   const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState(false);
+  const [isEditCourseCategoryModalOpen, setIsEditCourseCategoryModalOpen] = useState(false);
+  const [selectedCourse, setselectedCourse] = useState(null);
+  const [selectedCourseCategory, setselectedCourseCategory] = useState(null);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
+  const [isAddCourseCategoryModalOpen, setIsAddCourseCategoryModalOpen] = useState(false);
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
+  console.log("cousre categories", categories);
+
   useEffect(() => {
     dispatch(getRoles());
-  }, [dispatch]);
-
-  useEffect(() => {
     dispatch(getUsers());
-  }, [dispatch]);
-
-  useEffect(() => {
+    dispatch(fetchCourseCategories());
     dispatch(fetchCourses());
   }, [dispatch]);
-
 
   const handleDelete = (id: string) => {
     dispatch(deleteRole(id));
   };
 
+  const handleDeleteCourse = (id:string) => {
+    dispatch(deleteCourse(id));
+  };
+
+  const handleDeleteCourseCategory = (id: string) => {
+    dispatch(deleteCourseCategory(id));
+  };
+
   const [activeTab, setActiveTab] = useState("overview");
   const [SidebarOpen, setSidebarOpen] = useState(false);
-
-  // const courses = [
-  //   { id: "1vxzaertyuìtrghu76rdx", title: "Math 101", description: "math basic courses", category: "Financial literacy" },
-  //   { id: "27tfvbju8iuytredghnbg", title: "Vocabulary 101", description: "English basic courses", category: "Basic Education" },
-  // ];
 
   const programs = [
     { id: 1, name: "STEM Program", description: "Science, Technology, Engineering, and Math.", status: "Ongoing" },
@@ -117,6 +125,14 @@ const AdminDashboard = () => {
               className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
             >
               <BookOpen /> Courses
+            </button>
+          </li>
+          <li>
+            <button
+              onClick={() => setActiveTab("courseCategories")}
+              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+            >
+              <BookOpen /> CourseCategories
             </button>
           </li>
           <li>
@@ -292,9 +308,9 @@ const AdminDashboard = () => {
             <h1 className="text-2xl font-bold mb-4 text-center">Manage Courses</h1>
             <button
               onClick={() => setIsAddCourseModalOpen(true)}
-              className="bg-green-500 text-white p-2 rounded-md hover:bg-green-600 transition"
+              className="bg-dark-secondary text-white p-2 mb-2 rounded-md hover:bg-green-600 transition"
             >
-              Add Course
+              + Add
             </button>
             <table className="w-full table-auto border-collapse text-sm">
               <thead>
@@ -316,10 +332,19 @@ const AdminDashboard = () => {
                     <td className="p-3">{course.content}</td>
                     <td className="p-3">{course.categoryId}</td>
                     <td className="p-3 flex gap-2">
-                      <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
+                    <button 
+                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+                        onClick={() => {
+                          setselectedCourse(course); 
+                          setIsEditCourseModalOpen(true);
+                        }}
+                        >
                         <Edit className="w-4 h-4" />
                       </button>
-                      <button className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition">
+                      <button 
+                        className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition"
+                        onClick={() => handleDeleteCourse(course.id)}
+                      >
                         <Trash className="w-4 h-4" />
                       </button>
                     </td>
@@ -329,7 +354,92 @@ const AdminDashboard = () => {
             </table>
 
             <AddCourseModal isOpen={isAddCourseModalOpen} onClose={() => setIsAddCourseModalOpen(false)} />
+            {isEditCourseModalOpen && (
+            <EditCourseModal
+              isOpen={isEditCourseModalOpen}
+              onClose={() => setIsEditCourseModalOpen(false)}
+              course={selectedCourse} 
+            />
+            )}
 
+            {/* {isEditCourseModalOpen && <EditCourseModal isOpen={isEditCourseModalOpen} onClose={() => setIsEditCourseModalOpen(false)} course={selectedCourse} />} */}
+
+          </section>
+        )}
+
+        {/* CourseCategories Tab */}
+        {activeTab === "courseCategories" && (
+          <section className="text-justify dark:text-dark-text">
+            <div className="flex justify-between">
+              <h1 className="text-2xl font-bold mb-4 text-center">Course Categories</h1>
+              <button
+                onClick={() => setIsAddCourseCategoryModalOpen(true)}
+                className="bg-dark-secondary text-white p-2 mb-2 rounded-md hover:bg-green-600 transition"
+              >
+                + Add
+              </button>
+            </div>
+
+            {/* Loading Spinner */}
+            {categoryLoading ? (
+              <div className="flex justify-center items-center py-6">
+                <div className="animate-spin border-t-4 border-green-500 border-solid w-12 h-12 rounded-full"></div>
+              </div>
+            ) : (
+              <table className="w-full table-auto border-collapse text-sm">
+                <thead>
+                  <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
+                    <th className="p-3">ID</th>
+                    <th className="p-3">Name</th>
+                    <th className="p-3">Description</th>
+                    <th className="p-3">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categories.map((category: any) => (
+                    <tr key={category.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
+                      <td className="p-3">{category.id}</td>
+                      <td className="p-3">{category.name}</td>
+                      <td className="p-3">{category.description}</td>
+                      <td className="p-3 flex gap-2">
+                        <button 
+                          className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+                          onClick={() => {
+                            setselectedCourseCategory(category.id); 
+                            setIsEditCourseCategoryModalOpen(true);
+                          }}
+                        >
+                          <Edit className="w-4 h-4" />
+                        </button>
+                        <button 
+                          className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition"
+                          onClick={() => handleDeleteCourseCategory(category.id)}
+                        >
+                          <Trash className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+
+            {/* Modals */}
+            {isAddCourseCategoryModalOpen && (
+            <AddCategoryModel
+              isOpen={isAddCourseCategoryModalOpen}
+              onClose={() => setIsAddCourseCategoryModalOpen(false)}
+            />
+          )}
+
+          {isEditCourseCategoryModalOpen && (
+            <EditCatModel
+              isOpen={isEditCourseCategoryModalOpen}
+              onClose={() => setIsEditCourseCategoryModalOpen(false)}
+              categoryId={selectedCourseCategory}
+            />
+          )}
+            
           </section>
         )}
 

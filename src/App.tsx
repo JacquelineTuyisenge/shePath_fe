@@ -1,5 +1,5 @@
 import HomePage from './components/Home';
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route} from 'react-router-dom';
 import Login from './auth/Login';
 import AboutPage from './components/About';
 import AdminDashboard from './dashboards/AdminDash';
@@ -10,6 +10,8 @@ import CoursesList from './components/Courses';
 import CourseDetails from './components/CourseDetails';
 import ProtectedRoute from './auth/ProtectedRoute';
 import NotFound from './features/NotFound';
+import PrivacyPolicy from './components/Policy';
+
 
 function App() {
   return(
@@ -18,6 +20,7 @@ function App() {
         <Route index element={<HomePage />}/>
         <Route path='/login' element={<Login />}/>
         <Route path='/about' element={<AboutPage />} />
+        <Route path='/policy' element={<PrivacyPolicy />} />
 
         <Route path='/courses'>
           <Route index element={<CoursesList />} />
@@ -47,4 +50,4 @@ function App() {
   );
 }
 
-export default App
+export default App;

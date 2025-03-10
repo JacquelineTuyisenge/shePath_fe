@@ -1,6 +1,7 @@
 import axios from "axios";
 
-const API = 'https://shepath-be.onrender.com';
+// const API = 'https://shepath-be.onrender.com';
+const API = 'http://localhost:5000';
 
 const axiosInstance = axios.create({
     baseURL: API,

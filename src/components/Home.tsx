@@ -2,26 +2,33 @@ import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import LanguageToggle from "./Translate";
+import Footer from "./Footer";
 import ThemeToggle from "./Theme";
 import Login from "../auth/Login";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import heroPic from '../assets/heroPic.svg'
 import AboutPage from "./About";
 import { fadeInUp, fadeInLeft, fadeInRight} from "./motionVariants";
 import {Menu, X, UserCircle} from 'lucide-react';
 import CoursesList from "./Courses";
+import { FaSignInAlt } from "react-icons/fa";
 
 
 const HomePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation(); // Initialize translation hook
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
+    const role = localStorage.getItem("role");
+
     if (token) {
       setIsAuthenticated(true);
+      setUserRole(role);
     }
   }, []);
 
@@ -29,23 +36,43 @@ const HomePage: React.FC = () => {
   const closeLoginModal = () => setIsLoginModalOpen(false);
   const toggleMenu = () => setIsOpen(!isOpen);
 
+  const getDashboardRoute = () => {
+    switch (userRole) {
+      case "Admin": return "/admin";
+      case "Learner": return "/learner";
+      case "Mentor": return "/mentor";
+      case "Parent": return "/parent";
+      default: return "/";
+    }
+  };
+
+  const scrollToContact = () => {
+    const contactElement = document.getElementById("contact");
+    if (contactElement) {
+      contactElement.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
   return (
     <div className="min-h-screen w-full bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text">
       <nav className="bg-light-gray dark:bg-dark-gray p-4 flex justify-between items-center shadow-md">
         <div className="flex justify-between items-center">
-          <div className="flex justify-center items-center">
-            <h1 className="text-light-primary font-bold px-2 text-2xl">ShePath</h1>
+          <div className="flex justify-between space-x-40">
+            <button onClick={() => navigate("/")}>
+              <h1 className="text-light-primary font-bold px-2 text-2xl">ShePath</h1>
+            </button>
             {/* hamburg menu */}
             <button onClick={toggleMenu} className="md:hidden text-light-primary">
               {isOpen ? <X /> : 
               <Menu />}
             </button>
           </div>
-          <ul className="hidden md:flex space-x-6 items-center">
-            <li className="hover:text-light-primary cursor-pointer">{t("home")}</li>
-            <li><Link to="/about">About</Link></li>
-            <li className="hover:text-light-primary cursor-pointer">Programs</li>
-            <li className="hover:text-light-primary cursor-pointer">Contact</li>
+          <ul className="hidden md:flex px-4 space-x-4 items-center">
+            <li className="hover:text-light-primary cursor-pointer"><Link to="/about">{t("about")}</Link></li> {/* Translated About text */}
+            <li className="hover:text-light-primary cursor-pointer"><Link to="/courses">{t("programs")}</Link></li> {/* Translated Programs text */}
+            <li className="hover:text-light-primary cursor-pointer">
+             <button onClick={scrollToContact}>{t("contact")}</button> {/* Translated Contact text */}
+            </li>
           </ul>
         </div>
           {/* Theme & Language Toggle + Login Button (Desktop) */}
@@ -53,41 +80,55 @@ const HomePage: React.FC = () => {
           <LanguageToggle />
           <ThemeToggle />
           {isAuthenticated ? (
+            <div className="flex items-center space-x-4">
+            <Link to={getDashboardRoute()} className="px-6 py-2 bg-gray-200 dark:bg-gray-600 rounded hover:transition-transform duration-300 transform hover:scale-105">
+              {t("dashboard")}
+            </Link> {/* Translated Dashboard */}
             <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+          </div>
           ) : (
             <button 
-            onClick={openLoginModal}
-            className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
-          >
-            Login
-          </button>
+              onClick={openLoginModal}
+              className="flex items-center space-x-2 p-2 rounded hover:bg-light-accent transition"
+            >
+              <FaSignInAlt size={20} /> {/* The Login icon */}
+              <span>{t("login")}</span> {/* Translated Login */}
+            </button>
+
           )}
         </div>
       </nav>
 
       {isOpen && (
         <div className="md:hidden">
-            <div className="flex flex-col w-40 bg-light-gray dark:bg-dark-gray p-2 space-x-2 mt-4 items-start justify-center">
+            <div className="flex w-fit bg-light-gray dark:bg-dark-gray p-4 space-x-2 space-y-2 m-4 items-center justify-center">
               <ul className="space-y-2 text-justify px-6">
-                <li className="hover:text-light-primary cursor-pointer">{t("home")}</li>
-                <li><Link to="/about">About</Link></li>
-                <li className="hover:text-light-primary cursor-pointer">Programs</li>
-                <li className="hover:text-light-primary cursor-pointer">Contact</li>
+                <li className="hover:text-light-primary cursor-pointer"><Link to="/about">{t("about")}</Link></li> {/* Translated About */}
+                <li className="hover:text-light-primary cursor-pointer"><Link to="/courses">{t("programs")}</Link></li> {/* Translated Programs */}
+                <li className="hover:text-light-primary cursor-pointer">{t("contact")}</li> {/* Translated Contact */}
               </ul>
-              <ul className="flex text-justify">
-                <LanguageToggle />
-                <ThemeToggle />
-                {isAuthenticated ? (
-                <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
-                ) : (
-                  <button 
-                  onClick={openLoginModal}
-                  className="px-6 py-2 bg-light-primary text-white rounded hover:bg-light-accent transition"
-                >
-                  Login
-                </button>
-                )}
-              </ul>
+              <div>
+                <div className="flex light:bg-gray-400 rounded">
+                  <LanguageToggle />
+                  <ThemeToggle />
+                </div>
+                  {isAuthenticated ? (
+                    <div className="flex flex-col gap-2 m-2">
+                    <Link to={getDashboardRoute()} className="p-2 bg-gray-200 dark:bg-gray-600 rounded hover:transition-transform duration-300 hover:scale-105">
+                      {t("dashboard")}
+                    </Link> {/* Translated Dashboard */}
+                    <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+                  </div>
+                  ) : (
+                    <button 
+                      onClick={openLoginModal}
+                      className="flex items-center space-x-2 p-2 rounded hover:bg-light-accent hover:text-white transition"
+                    >
+                      <FaSignInAlt size={20} /> {/* The Login icon */}
+                      <span>{t("login")}</span> {/* Translated Login */}
+                    </button>
+                  )}
+              </div>
             </div>
         </div>
         )}
@@ -97,7 +138,7 @@ const HomePage: React.FC = () => {
         <div className="w-full">
           <motion.h2
             className="text-4xl md:text-4xl font-bold leading-tight" {...fadeInLeft}>
-            <span className="text-light-secondary">Your Journey Begins Here!</span>  
+            <span className="text-light-secondary">{t("journeyBegins")}</span> {/* Translated Journey Begins */}
             <br />
           </motion.h2>
           <motion.p className="mt-4 text-justify text-lg text-dark-gray dark:text-light-gray" {...fadeInUp}>
@@ -108,7 +149,7 @@ const HomePage: React.FC = () => {
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
-            Get Started
+            {t("getStarted")} {/* Translated Get Started */}
           </motion.button>
         </div>
 
@@ -141,9 +182,9 @@ const HomePage: React.FC = () => {
       <CoursesList />
 
       {/* Footer */}
-      <footer className="p-6 bg-light-gray dark:bg-dark-gray text-center">
-        <p>&copy; {new Date().getFullYear()} ShePath. All Rights Reserved.</p>
-      </footer>
+      <div className="contact" id="contact">
+      <Footer />
+      </div>
     </div>
   );
 };
