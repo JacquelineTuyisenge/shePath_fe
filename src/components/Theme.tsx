@@ -21,7 +21,7 @@ const ThemeToggle: React.FC = () => {
   return (
     <button
       onClick={toggleTheme}
-      className="p-2 rounded"
+      className="p-3 rounded"
     >
     {theme === 'light' ? <FaMoon size={20} /> : <FaSun size={20} />}
     </button>

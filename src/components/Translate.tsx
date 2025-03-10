@@ -1,45 +1,45 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { FaGlobe } from 'react-icons/fa'
+import { FaGlobe } from 'react-icons/fa';
 
 const LanguageToggle: React.FC = () => {
   const { i18n } = useTranslation();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false); 
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
 
   const handleLanguageChange = (language: string) => {
     i18n.changeLanguage(language);
-    setIsDropdownOpen(false);
+    setIsDropdownVisible(false); // Hide dropdown after language selection
   };
 
   return (
-    <div className="relative p-2">
-      <button
-        onClick={() => setIsDropdownOpen((prev) => !prev)}
-        className="flex items-center space-x-2"
-      >
-        <FaGlobe size={20} />
-      </button>
-
-      {isDropdownOpen && (
-        <div className="absolute right-0 mt-2 rounded w-40 flex">
-          <button
+    <div className="relative justify-center items-center p-3">
+      <FaGlobe
+        size={20}
+        className="cursor-pointer"
+        onClick={() => setIsDropdownVisible((prev) => !prev)}
+      />
+      
+      {/* Dropdown that appears when icon is clicked */}
+      {isDropdownVisible && (
+        <div className="absolute top-5 left-5 mt-5 bg-light-gray dark:bg-dark-gray shadow-lg text-light-text dark:text-dark-text rounded border">
+          <div
             onClick={() => handleLanguageChange('en')}
-            className="block w-full text-left px-4 py-2 hover:text-light-primary"
+            className="px-4 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500"
           >
             English
-          </button>
-          <button
+          </div>
+          <div
             onClick={() => handleLanguageChange('fr')}
-            className="block w-full text-left px-4 py-2 hover:text-light-primary"
+            className="px-4 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500"
           >
             Français
-          </button>
-          <button
+          </div>
+          <div
             onClick={() => handleLanguageChange('rw')}
-            className="block w-full text-left px-4 py-2 hover:text-light-primary"
+            className="px-4 py-2 cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-500"
           >
             Kinyarwanda
-          </button>
+          </div>
         </div>
       )}
     </div>
