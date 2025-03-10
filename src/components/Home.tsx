@@ -89,7 +89,7 @@ const HomePage: React.FC = () => {
           ) : (
             <button 
               onClick={openLoginModal}
-              className="flex items-center space-x-2 p-2 text-white rounded hover:bg-light-accent transition"
+              className="flex items-center space-x-2 p-2 rounded hover:bg-light-accent transition"
             >
               <FaSignInAlt size={20} /> {/* The Login icon */}
               <span>{t("login")}</span> {/* Translated Login */}
