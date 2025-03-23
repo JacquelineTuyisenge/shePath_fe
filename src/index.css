@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Custom styles for Swiper navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+  @apply text-orange-500 !important; /* Use Tailwind's orange color */
+}
+
+/* Optional: Change the hover color */
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  @apply text-orange-700 !important; /* Darker shade on hover */
+}

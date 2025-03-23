@@ -10,16 +10,26 @@ export interface User {
     role: string;
     status: string;
     createdAt: string;
+    phoneNumber?: string;
+    gender?: string;
+    birthDate?: string;
+    profileImage?: string;
+    country?: string;
+    city?: string;
+    address?: string;
+
 }
 
 interface UserState {
     users: User[];
+    currentUser: User | null;
     loading: boolean;
     error: string | null;
 }
 
 const initialState: UserState = {
     users: [],
+    currentUser: null,
     loading: false,
     error: null,
 };
@@ -34,7 +44,33 @@ export const getUsers = createAsyncThunk<User[], void>(
             return rejectWithValue(error.response?.data?.message || "failed to fetch users!");
         }
         
-    })
+})
+
+export const getProfile = createAsyncThunk<User, void>(
+    "users/getProfile",
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.get("/api/auth/profile");
+
+            console.log("prifilee", response.data.userProfile);
+            return response.data.userProfile;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "failed to fetch profile!");
+        }
+    }
+);
+
+export const editProfile = createAsyncThunk<User, User>(
+    "users/editProfile",
+    async (userData: User, { rejectWithValue }) => {
+        try {
+            const response = await axiosInstance.patch("/api/auth/profile", userData);
+            return response.data.user;
+        } catch (error: any) {
+            return rejectWithValue(error.response?.data?.message || "failed to update profile!");
+        }
+        
+})
 
 const userSlice = createSlice({
     name: "users",
@@ -51,6 +87,30 @@ const userSlice = createSlice({
                 state.users = action.payload;
             })
             .addCase(getUsers.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(getProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(getProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentUser  = action.payload; // Store the current user's profile
+            })
+            .addCase(getProfile.rejected, (state, action) => {
+                state.loading = false;
+                state.error = action.payload as string;
+            })
+            .addCase(editProfile.pending, (state) => {
+                state.loading = true;
+                state.error = null;
+            })
+            .addCase(editProfile.fulfilled, (state, action) => {
+                state.loading = false;
+                state.currentUser  = action.payload; // Update the current user's profile
+            })
+            .addCase(editProfile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
             });

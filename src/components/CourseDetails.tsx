@@ -1,13 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchCourseDetails } from "../features/courseSlice";
-import BackButton from "../buttons/Back";
 import { RootState, AppDispatch } from "../store";
 import { useTranslation } from "react-i18next";
 import { FaBookOpen, FaInfoCircle } from "react-icons/fa";
-import { MdErrorOutline } from "react-icons/md";
-import Footer from "./Footer";
+import { getProfile } from "../features/userSlice";
+import Toaster from "../components/Toaster";
+import Loader from "../components/Loader";
 
 // Import images
 import pic from '../assets/Hero-bg.png';
@@ -32,37 +32,65 @@ function CourseDetails() {
     const dispatch = useDispatch<AppDispatch>();
     const { t } = useTranslation();
     const { id } = useParams<{ id: string }>();
+    const [progress, setProgress] = useState(0);
+    const { currentUser  } = useSelector((state: RootState) => state.users);
 
     useEffect(() => {
         if (id) {
             dispatch(fetchCourseDetails(id)).unwrap();
-        } 
+            dispatch(getProfile());
+        }
     }, [dispatch, id]);
 
-    if (loading) return <p className="text-center text-lg text-light-primary dark:text-dark-primary animate-pulse">{t('Loading course details...')}</p>;
-    if (error) return <p className="text-center text-red-500 flex items-center justify-center gap-2"><MdErrorOutline className="text-2xl" /> {error}</p>;
+    useEffect(() => {
+        const handleScroll = () => {
+            const scrollTop = window.scrollY;
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.body.scrollHeight;
+            const totalScrollableHeight = documentHeight - windowHeight;
+            const newProgress = (scrollTop / totalScrollableHeight) * 100;
+            setProgress(Math.min(Math.max(newProgress, 0), 100)); // Clamp between 0 and 100
+
+            // Save progress to local storage with user ID
+            if (currentUser ) {
+                localStorage.setItem(`course-${id}-user-${currentUser .id}-progress`, Math.round(newProgress).toString());
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, [currentUser , id]);
+
+    const handleMarkAsComplete = () => {
+        if (currentUser ) {
+            localStorage.setItem(`course-${id}-user-${currentUser .id}-completed`, "true");
+            alert("Course marked as complete!");
+        }
+    };
+
+    if (loading) return <Loader />;
+    if (error) return <Toaster message={error} type="error" />;
     if (!singleCourse) return <p className="text-center text-gray-500">{t('Course not found.')}</p>;
 
-    // Getting the image based on the course category
-    const courseImage = categoryImageMap[singleCourse.categoryId as keyof typeof categoryImageMap] || pic; // Default to pic if no match
+    const courseImage = categoryImageMap[singleCourse.categoryId as keyof typeof categoryImageMap] || pic;
 
     return (
-        <>
-        <div className="min-h-screen max-w-5xl mx-auto p-6 sm:p-8 lg:p-12 dark:bg-dark-background text-light-text dark:text-dark-text">
-            <BackButton />
-            <div className="relative mb-6">
-                <img src={courseImage} alt={singleCourse.title} className="w-full h-64 object-cover rounded-2xl shadow-lg" />
+        <div className="w-full m-auto p-2 sm:p-4 bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text">
+            <div className="relative mt-9">
+                <img src={courseImage} alt={singleCourse.title} className="w-full h-68 object-cover rounded-2xl shadow-lg" />
             </div>
 
             <div className="bg-light-gray dark:bg-dark-gray p-6 sm:p-8 rounded-2xl shadow-lg flex items-center gap-6">
                 <FaBookOpen className="text-light-primary dark:text-dark-primary text-5xl" />
-                <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold">{singleCourse.title}</h1>
-                </div>
+                <h1 className="text-3xl sm:text-4xl font-bold">{singleCourse.title}</h1>
             </div>
 
             <div className="mt-8 p-6 sm:p-8 bg-light-gray dark:bg-dark-gray rounded-2xl shadow-md">
-                <h2 className="text-xl font-semibold flex items-center gap-2"><FaInfoCircle /> {t('Description')}</h2>
+                <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <FaInfoCircle /> {t('Description')}
+                </h2>
                 <p className="text-base mt-2 leading-relaxed">{singleCourse.description}</p>
             </div>
 
@@ -71,12 +99,16 @@ function CourseDetails() {
                 <p className="mt-2 leading-relaxed">{singleCourse.content}</p>
             </div>
 
-            <div className="mt-8 w-full bg-light-gray dark:bg-dark-gray rounded-full h-4 shadow-inner">
-                <div className="bg-light-primary dark:bg-dark-primary -4 rounded-full transition-all duration-500 ease-in-out" style={{ width: `20%` }}></div>
+            <div className="flex justify-between items-center mt-4">
+                <div className="text-lg font-semibold">Progress: {Math.round(progress)}%</div>
+                <button
+                    onClick={handleMarkAsComplete}
+                    className="px-4 py-2 bg-light-primary text-white rounded-lg"
+                >
+                    Mark as Complete
+                </button>
             </div>
         </div>
-        <Footer />
-        </>
     );
 }
 

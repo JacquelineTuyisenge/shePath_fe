@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Card from "../components/Card";
 
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key} from "lucide-react";
+import { User, BookOpen, MessageCircle, Settings, Users, Menu, X, Edit, Trash, Key, BookIcon} from "lucide-react";
 import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
 import AddRoleModal from "../modals/AddRole";
@@ -11,6 +11,7 @@ import AddCategoryModel from "../modals/AddCategory";
 import EditCourseModal from "../modals/EditCourseModal";
 import EditCatModel from "../modals/EditCategory";
 import { getUsers } from "../features/userSlice";
+import { getMessages } from "../features/messageSlice";
 import { deleteCourse, fetchCourses } from "../features/courseSlice";
 import { deleteCourseCategory, fetchCourseCategories } from "../features/courceCategorySlice";
 import { getRoles} from "../features/roleSlice";
@@ -27,9 +28,10 @@ const AdminDashboard = () => {
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
   const dispatch = useAppDispatch();
+  const [searchTerm, setSearchTerm] = useState("");
   const { users, loading, error } = useAppSelector((state: any) => state.users);
   const {courses} = useAppSelector((state: any) => state.courses);
-      // const { categories = [] } = useSelector((state: RootState) => state.categories);
+  const { messages } = useAppSelector((state: RootState) => state.sms);
   const {categories = [], loading: categoryLoading} = useAppSelector((state: any) => state.categories);
   const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -43,11 +45,10 @@ const AdminDashboard = () => {
   const [selectedRole, setSelectedRole] = useState(null);
   const [selectedUser, setSelectedUser] = useState(null);
 
-  console.log("cousre categories", categories);
-
   useEffect(() => {
     dispatch(getRoles());
     dispatch(getUsers());
+    dispatch(getMessages());
     dispatch(fetchCourseCategories());
     dispatch(fetchCourses());
   }, [dispatch]);
@@ -67,11 +68,6 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [SidebarOpen, setSidebarOpen] = useState(false);
 
-  const programs = [
-    { id: 1, name: "STEM Program", description: "Science, Technology, Engineering, and Math.", status: "Ongoing" },
-    { id: 2, name: "Arts Program", description: "Creative Arts and Literature.", status: "Completed" },
-  ];
-
   return (
     <div className="flex min-h-screen bg-light-background dark:bg-dark-background">
       {/* Mobile Sidebar */}
@@ -84,7 +80,7 @@ const AdminDashboard = () => {
 
       {/* Sidebar Navigation */}
       <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-light-gray dark:bg-dark-gray p-6 transition-transform transform md:relative md:translate-x-0 ${SidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+        className={`fixed inset-y-0 left-0 w-64 bg-light-gray dark:bg-dark-gray p-6 transition-transform transform md:relative md:translate-x-0 ${SidebarOpen ? "translate-x-0 z-50" : "-translate-x-full"}`}
       >
         <button
           className="p-2 absolute top-4 right-4 md:hidden"
@@ -93,65 +89,66 @@ const AdminDashboard = () => {
           <X className="w-6 h-6 dark:text-dark-text" />
         </button>
 
-        <h2 className="text-md font-bold text-light-primary mb-6">Admin Dashboard</h2>
+        <h2 className="text-2xl font-bold text-light-primary mb-6">Admin Dashboard</h2>
         <ul className="space-y-4">
           <li>
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "overview" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <User /> Overview
-            </button>
+              <button
+                  onClick={() => setActiveTab("overview")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "overview" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <User  /> Overview
+              </button>
           </li>
           <li>
-            <button
-              onClick={() => setActiveTab("users")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "users" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Users /> Users
-            </button>
+              <button
+                  onClick={() => setActiveTab("users")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "users" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <Users /> Users
+              </button>
           </li>
           <li>
-            <button
-              onClick={() => setActiveTab("roles")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "roles" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Key /> Roles
-            </button>
+              <button
+                  onClick={() => setActiveTab("roles")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "roles" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <Key /> Roles
+              </button>
           </li>
           <li>
-            <button
-              onClick={() => setActiveTab("courses")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <BookOpen /> Courses
-            </button>
+              <button
+                  onClick={() => setActiveTab("courseCategories")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courseCategories" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <BookIcon /> Course Categories
+              </button>
           </li>
           <li>
-            <button
-              onClick={() => setActiveTab("courseCategories")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <BookOpen /> CourseCategories
-            </button>
+              <button
+                  onClick={() => setActiveTab("courses")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <BookOpen /> Courses
+              </button>
           </li>
           <li>
-            <button
-              onClick={() => setActiveTab("programs")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "programs" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Award /> Programs
-            </button>
+              <button
+                  onClick={() => setActiveTab("sms")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "sms" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <BookOpen /> Messages
+              </button>
           </li>
           <li>
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "settings" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Settings /> Settings
-            </button>
+              <button
+                  onClick={() => setActiveTab("settings")}
+                  className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "settings" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
+              >
+                  <Settings /> Settings
+              </button>
           </li>
-        </ul>
+
+      </ul>
         <div className="mt-6 dark:text-dark-text">
           <ThemeToggle />
         </div>
@@ -169,10 +166,10 @@ const AdminDashboard = () => {
         {activeTab === "overview" && (
           <section className="text-justify dark:text-dark-text">
             <h1 className="text-2xl font-bold m-5 text-center">Admin Dashboard Overview</h1>
-            <div className="m-4 flex flex-wrap justify-around items-center gap-4">
+            <div className="m-4 flex flex-col sm:flex-row justify-around items-center gap-4">
               <Card title="Users" value={users.length} icon={<Users />} />
               <Card title="Courses" value={courses.length} icon={<BookOpen />} />
-              <Card title="Programs" value={programs.length} icon={<Award />} />
+              <Card title="Messages" value={messages? messages.length: 0} icon={<MessageCircle />} />
             </div>
             <div className="mt-10 text-center">
               <UserExpansionTrend />
@@ -180,16 +177,27 @@ const AdminDashboard = () => {
           </section>
         )}
 
-        {/* Users Tab */}
-        {activeTab === "users" && (
-          <section className="text-justify dark:text-dark-text">
+      {/* Users Tab */}
+      {activeTab === "users" && (
+        <section className="text-justify dark:text-dark-text">
+          <div className="flex flex-col sm:flex-row justify-around items-center">
             <h1 className="text-2xl font-bold mb-4 text-center">Manage Users</h1>
-            {loading ? (
-              <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-            ) : error ? (
-              <p className="text-red-600 dark:text-red-700">{error}</p>
-            ) : (
-              <table className="w-full table-auto border-collapse text-sm">
+            <form onSubmit={(e) => e.preventDefault()}>
+              <input 
+                type="text" 
+                className="m-2 p-2 rounded border border-orange-500 bg-light-gray focus:border-orange-600 focus:ring-0" 
+                placeholder="Search by email" 
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+              />
+          </form>
+          </div>
+          {loading ? (
+            <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+          ) : error ? (
+            <p className="text-red-600 dark:text-red-700">{error}</p>
+          ) : (
+            <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
                   <th className="p-3">ID</th>
@@ -202,45 +210,43 @@ const AdminDashboard = () => {
                 </tr>
               </thead>
               <tbody>
-                {users.map((item: any) => (
-                  <tr key={item.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{item.id}</td>
-                    <td className="p-3">{item.email}</td>
-                    <td className="p-3">{item.firstName}</td>
-                    <td className="p-3">{item.lastName}</td>
-                    <td className="p-3">{item.role}</td>
-                    <td className="p-3">{item.status? "Active" : "Inactive"}</td>
-                    <td className="p-3 flex gap-2">
-                      <button 
-                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
-                        onClick={() => {
-                          setSelectedUser(item);
-                          setIsModalOpen(true);
-                        }}
+                {users
+                  .filter((user: { email: string; }) => user.email.toLowerCase().includes(searchTerm.toLowerCase())) // Filter users by email
+                  .map((item: any) => (
+                    <tr key={item.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
+                      <td className="p-3">{item.id}</td>
+                      <td className="p-3">{item.email}</td>
+                      <td className="p-3">{item.firstName}</td>
+                      <td className="p-3">{item.lastName}</td>
+                      <td className="p-3">{item.role}</td>
+                      <td className="p-3">{item.status ? "Active" : "Inactive"}</td>
+                      <td className="p-3">
+                        <button 
+                          className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
+                          onClick={() => {
+                            setSelectedUser (item);
+                            setIsModalOpen(true);
+                          }}
                         >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition">
-                        <Trash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                          <Edit className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
               </tbody>
             </table>
-            )}
+          )}
 
-            {/* Assign Role Modal */}
-            {isModalOpen && selectedUser && (
-              <AssignRoleModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                user={selectedUser}
-              />
-            )}
-
-          </section>
-        )}
+          {/* Assign Role Modal */}
+          {isModalOpen && selectedUser  && (
+            <AssignRoleModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+              user={selectedUser }
+            />
+          )}
+        </section>
+      )}
 
         {/* Roles Tab */}
         {activeTab === "roles" && (
@@ -444,26 +450,24 @@ const AdminDashboard = () => {
         )}
 
         {/* Programs Tab */}
-        {activeTab === "programs" && (
+        {activeTab === "sms" && (
           <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Manage Programs</h1>
+            <h1 className="text-2xl font-bold mb-4 text-center">Messages</h1>
             <table className="w-full table-auto border-collapse text-sm">
               <thead>
                 <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
                   <th className="p-3">ID</th>
-                  <th className="p-3">Program Name</th>
-                  <th className="p-3">Description</th>
-                  <th className="p-3">Status</th>
+                  <th className="p-3">Sender</th>
+                  <th className="p-3">Message</th>
                   <th className="p-3">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {programs.map(program => (
-                  <tr key={program.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{program.id}</td>
-                    <td className="p-3">{program.name}</td>
-                    <td className="p-3">{program.description}</td>
-                    <td className="p-3">{program.status}</td>
+                {messages.map((message: any) => (
+                  <tr key={message.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
+                    <td className="p-3">{message.id}</td>
+                    <td className="p-3">{message.email}</td>
+                    <td className="p-3">{message.message}</td>
                     <td className="p-3 flex gap-2">
                       <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
                         <Edit className="w-4 h-4" />

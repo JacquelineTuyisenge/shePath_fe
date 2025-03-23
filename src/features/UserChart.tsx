@@ -44,7 +44,7 @@ const UserExpansionTrend = () => {
   return (
     <div className="dark:bg-dark-gray p-4 rounded-xl shadow-lg">
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-xl text-dark-secondary font-semibold">User Growth Over Time</h2>
+        <h2 className="text-xl w-1/2 sm:w-full text-dark-secondary font-semibold">User Growth Over Time</h2>
         <select
           className="border p-2 rounded-md bg-white dark:bg-dark-secondary"
           value={selectedYear}

@@ -73,8 +73,9 @@ const resources = {
       namePlaceholder: "Your Name",
       emailPlaceholder: "Your Email",
       messagePlaceholder: "Your Message",
-      sendMessage: "Send Message",
-      allRightsReserved: "All rights reserved"
+      sendMessage: "Send",
+      allRightsReserved: "All rights reserved",
+      community: "Community",
     }
   },
   fr: {
@@ -147,8 +148,9 @@ const resources = {
       namePlaceholder: "Votre nom",
       emailPlaceholder: "Votre email",
       messagePlaceholder: "Votre message",
-      sendMessage: "Envoyer le message",
-      allRightsReserved: "Tous droits réservés"
+      sendMessage: "Envoyer",
+      allRightsReserved: "Tous droits réservés",
+      community: "Communauté",
     }
   },
   rw: {
@@ -189,7 +191,7 @@ const resources = {
       materials: "Ibikoresho",
       programs: "Porogaramu",
       about: "Ibyerekeye",
-      contact: "Aho ubarizwa",
+      contact: "Twandikire",
       dashboard: "Ibiro",
       myProfile: "Umwirondoro wanjye",
       changePassword: "Hindura ijambo ry'ibanga",
@@ -221,8 +223,9 @@ const resources = {
       namePlaceholder: "Izina ryawe",
       emailPlaceholder: "Imeyili yawe",
       messagePlaceholder: "Ubutumwa bwawe",
-      sendMessage: "Tanga ubutumwa",
-      allRightsReserved: "Uburenganzira bwose burabitswe"
+      sendMessage: "Ohereza",
+      allRightsReserved: "Uburenganzira bwose burabitswe",
+      community: "Urubuga"
     }
   }
 };

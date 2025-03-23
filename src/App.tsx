@@ -1,9 +1,9 @@
 import HomePage from './components/Home';
 import { Routes, Route} from 'react-router-dom';
+import Layout from './components/Layout';
 import Login from './auth/Login';
 import AboutPage from './components/About';
 import AdminDashboard from './dashboards/AdminDash';
-import LearnerDashboard from './dashboards/LearnerDash';
 import MentorDashboard from './dashboards/MentorDash';
 import ParentDashboard from './dashboards/ParentDash';
 import CoursesList from './components/Courses';
@@ -11,21 +11,30 @@ import CourseDetails from './components/CourseDetails';
 import ProtectedRoute from './auth/ProtectedRoute';
 import NotFound from './features/NotFound';
 import PrivacyPolicy from './components/Policy';
+import TopicList from './components/Community';
+import ForgotPassword from './components/Forgot';
+import ResetPassword from './components/Reset';
+import LearnerDashboard from './dashboards/LearnerDash';
 
 
 function App() {
+ 
   return(
     <>
       <Routes>
+        <Route element={<Layout />}>
+          <Route path="/about" element={<AboutPage />} />
+          <Route path='/courses'>
+            <Route index element={<CoursesList />} />
+            <Route path=':id' element={<CourseDetails />} />
+          </Route>
+          <Route path='/policy' element={<PrivacyPolicy />} />
+        </Route>
+        <Route path='/community' element={<TopicList />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route index element={<HomePage />}/>
         <Route path='/login' element={<Login />}/>
-        <Route path='/about' element={<AboutPage />} />
-        <Route path='/policy' element={<PrivacyPolicy />} />
-
-        <Route path='/courses'>
-          <Route index element={<CoursesList />} />
-          <Route path=':id' element={<CourseDetails />} />
-        </Route>
 
         {/* protected routes */}
         <Route element={<ProtectedRoute allowedRoles={['Admin']} />}>

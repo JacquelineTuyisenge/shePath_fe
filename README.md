@@ -61,7 +61,8 @@ create **.env** file at the root of project and add the environment variables
 
 - App Screenshots: 
 <br/>
-<img src="image.png" /> <img src="image2.png" />
+<img src="image.png" /> 
+<img src="image2.png" />
 
 ### Deployment plan
 Vercel for frontend deployment
