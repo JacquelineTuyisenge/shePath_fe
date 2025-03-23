@@ -29,7 +29,8 @@ export const toggleLike = createAsyncThunk(
         topicId,
         action: isLiked ? "unlike" : "like"
       });
-      console.log('', response)
+
+      console.log('responseee on liking', response);
 
       return { topicId, liked: !isLiked }; // Return updated like state
     } catch (error: any) {
@@ -37,7 +38,6 @@ export const toggleLike = createAsyncThunk(
     }
   }
 );
-
 
 const likeSlice = createSlice({
   name: 'likes',
@@ -55,6 +55,15 @@ const likeSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
+      .addCase(toggleLike.fulfilled, (state, action) => {
+        const { topicId, liked } = action.payload;
+        if (liked) {
+          state.likedTopics.push(topicId);
+        } else {
+          state.likedTopics = state.likedTopics.filter(id => id !== topicId);
+        }
+        localStorage.setItem("likedTopics", JSON.stringify(state.likedTopics));
+      })
       .addCase(toggleLike.rejected, (state, action) => {
         state.error = action.payload as string;
       });

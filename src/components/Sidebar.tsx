@@ -31,12 +31,12 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedTopicId, filteredTopics })
   };
 
   return (
-    <div className="w-full sm:w-64 bg-gray-100 p-4 rounded-lg shadow-md">
+    <div className="bg-light-background text-light-text dark:bg-dark-gray dark:text-dark-text w-full sm:w-64 bg-gray-100 p-4 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-4">Topics</h2>
       {loading ? (
         <Loader /> // Show loader when data is being fetched
       ) : (
-        <ul className="flex flex-col space-y-2">
+        <ul className="flex flex-col space-y-8">
           {filteredTopics.length ? (
             filteredTopics.map((topic) => (
               <li
@@ -44,7 +44,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedTopicId, filteredTopics })
                 onClick={() => handleTopicClick(topic.id)}
                 onKeyDown={(e) => e.key === "Enter" && handleTopicClick(topic.id)}
                 tabIndex={0}
-                className={`cursor-pointer border border-orange-200 rounded p-2 transition duration-200 hover:bg-orange-200 focus:ring-2 focus:ring-orange-400 outline-none ${
+                className={`cursor-pointer border-b-2 border-orange-500 p-2 transition duration-200 hover:bg-light-secondary focus:ring-2 focus:ring-orange-500 outline-none ${
                   selectedTopic === topic.id ? "bg-orange-300" : ""
                 }`}
               >

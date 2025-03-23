@@ -73,12 +73,43 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
   };
 
   const handleToggleLike = () => {
+    // Check if the topic is defined
+    if (!topic) {
+        console.error("Topic not found");
+        return; // Exit the function if topic is undefined
+    }
+
+    // Store the current topic ID before the action
+    localStorage.setItem('currentTopicId', topic.id);
+
+    // Determine if the topic is currently liked
+    const isCurrentlyLiked = likedTopics.includes(topicId);
+    
+    // Optimistically update the like count in the UI
+    const updatedLikesCount = isCurrentlyLiked ? topic.likes.length - 1 : topic.likes.length + 1;
+
     // Dispatch the local toggle action first to update the UI immediately
     dispatch(toggleLikeLocal(topicId));
-    
+
+    // Update the topic's likes count optimistically
+    const updatedTopic = {
+        ...topic,
+        likes: updatedLikesCount,
+    };
+
     // Then dispatch the async thunk to update the server
-    dispatch(toggleLike({ topicId }));
-  };
+    dispatch(toggleLike({ topicId })).then((result) => {
+        if (toggleLike.fulfilled.match(result)) {
+            // Optionally handle success
+            console.log("Like status updated successfully");
+            window.location.reload(); // Reload the page
+        } else {
+            // Revert the optimistic update if the server call fails
+            dispatch(toggleLikeLocal(topicId)); // Revert the optimistic update
+            console.error("Failed to update like status:", result.error);
+        }
+    });
+};
 
   const isLiked = likedTopics.includes(topicId); 
 
@@ -87,7 +118,7 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
       {loading ? (
         <Loader />
       ) : (
-        <div className="p-4 bg-white shadow-md rounded-lg">
+        <div className="p-4 bg-light-background dark:bg-dark-background shadow-md rounded-lg">
           {topic ? (
             <>
               <h1 className="text-2xl font-semibold">{topic.content}</h1>
@@ -151,13 +182,13 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
                   <button 
                     onClick={handleToggleLike} 
                     className={`font-semibold flex gap-2 ${isLiked ? 'text-red-500' : 'text-light-secondary'}`}>
-                    <FaRegHeart className="text-2xl transform"/> {topic?.likes.length}
+                    <FaRegHeart className="text-2xl hover:text-3xl transform"/> {topic?.likes.length}
                   </button>
                 </div>
                 {topic?.comments?.length > 0 ? (
                   topic.comments.map((comment: any) => (
-                    <div key={comment.id} className="bg-gray-100 p-4 rounded-lg mb-2">
-                      <p className="text-gray-600">{comment.content}</p>
+                    <div key={comment.id} className="bg-light-gray dark:bg-dark-gray text-light-text dark:text-light-gray p-4 mt-5 rounded-lg mb-2">
+                      <p className="">{comment.content}</p>
                     </div>
                   ))
                 ) : (
@@ -166,7 +197,19 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
               </div>
             </>
           ) : (
-            <p>Topic not found</p>
+            <div className="bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text flex flex-col items-center justify-center h-full p-6 rounded-lg shadow-md">
+            <h2 className="text-xl font-semibold mb-4">No Topic Selected</h2>
+            <p className="text-gray-500 mb-2">Please choose a topic to view its details.</p>
+            <p className="mb-4">Explore the topics on the left sidebar.</p>
+            <div className="flex flex-col items-center">
+              <FaCommentDots className="text-4xl text-light-secondary mb-2" />
+              <p className="text-gray-600">Ask a Question</p>
+            </div>
+            <div className="flex flex-col items-center mt-4">
+              <FaRegHeart className="text-4xl text-light-secondary mb-2" />
+              <p className="">Like a Topic</p>
+            </div>
+          </div>    
           )}
         </div>
       )}

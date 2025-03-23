@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axiosInstance from "../axiosInstance";
 
 export interface User {
+    profile?: string;
     id: string;
     email: string;
     firstName: string;
@@ -13,7 +14,6 @@ export interface User {
     phoneNumber?: string;
     gender?: string;
     birthDate?: string;
-    profileImage?: string;
     country?: string;
     city?: string;
     address?: string;
@@ -60,17 +60,21 @@ export const getProfile = createAsyncThunk<User, void>(
     }
 );
 
-export const editProfile = createAsyncThunk<User, User>(
+export const editProfile = createAsyncThunk<User, FormData>(
     "users/editProfile",
-    async (userData: User, { rejectWithValue }) => {
+    async (formData: FormData, { rejectWithValue }) => {
         try {
-            const response = await axiosInstance.patch("/api/auth/profile", userData);
+            const response = await axiosInstance.patch("/api/auth/profile", formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data', // Important for file uploads
+                },
+            });
             return response.data.user;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "failed to update profile!");
         }
-        
-})
+    }
+);
 
 const userSlice = createSlice({
     name: "users",

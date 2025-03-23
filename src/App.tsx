@@ -16,7 +16,6 @@ import ForgotPassword from './components/Forgot';
 import ResetPassword from './components/Reset';
 import LearnerDashboard from './dashboards/LearnerDash';
 
-
 function App() {
  
   return(

@@ -21,19 +21,19 @@ const Community = () => {
     <>
       {/* Background Content */}
       <div
-        className={`flex-1 p-6 ${isAskQuestionOpen ? 'blur-md opacity-50 pointer-events-none' : ''}`}
+        className={`bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text flex-1 p-6 ${isAskQuestionOpen ? 'opacity-50 pointer-events-none' : ''}`}
       >
         <Nav searchTerm={searchTerm} setSearchTerm={setSearchTerm} setIsAskQuestionOpen={setIsAskQuestionOpen} />
       </div>
 
       {isAskQuestionOpen && <AskQuestion setIsAskQuestionOpen={setIsAskQuestionOpen} />}
 
-      <div className={`flex flex-col h-screen m-4 p-4 w-full ${isAskQuestionOpen ? 'blur-md opacity-50 pointer-events-none' : ''}`}>
+      <div className={`bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text flex flex-col h-screen p-4 w-full ${isAskQuestionOpen ? 'blur-md opacity-50 pointer-events-none' : ''}`}>
         <div className="flex flex-col md:flex-row min-h-screen w-full">
           <Sidebar setSelectedTopicId={setSelectedTopicId} filteredTopics={filteredTopics} />
 
           <div className={`flex-1 p-6 ${isAskQuestionOpen ? 'opacity-50 pointer-events-none' : ''}`}>
-            {selectedTopicId && <QuestionDetail topicId={selectedTopicId} />}
+            {<QuestionDetail topicId={selectedTopicId} />}
           </div>
         </div>
       </div>
