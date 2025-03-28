@@ -52,7 +52,7 @@ function Login() {
                     switch (data.user.role) {
                         case 'Admin': navigate('/admin'); break;
                         case 'Learner': navigate('/learner'); break;
-                        case 'Guide-Mentor': navigate('/mentor'); break;
+                        case 'Mentor': navigate('/mentor'); break;
                         case 'Parent': navigate('/parent'); break;
                         default: navigate('/'); break;
                     }

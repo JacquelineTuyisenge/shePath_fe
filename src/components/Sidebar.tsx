@@ -31,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ setSelectedTopicId, filteredTopics })
   };
 
   return (
-    <div className="bg-light-background text-light-text dark:bg-dark-gray dark:text-dark-text w-full sm:w-64 bg-gray-100 p-4 rounded-lg shadow-md">
+    <div className="h-screen bg-light-background text-light-text dark:bg-dark-gray dark:text-dark-text w-full sm:w-64 bg-gray-100 p-4 rounded-lg shadow-md">
       <h2 className="text-2xl font-semibold mb-4">Topics</h2>
       {loading ? (
         <Loader /> // Show loader when data is being fetched

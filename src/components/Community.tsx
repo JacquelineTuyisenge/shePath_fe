@@ -6,7 +6,7 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
 
-const Community = () => {
+const TopicList = () => {
   const [selectedTopicId, setSelectedTopicId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [isAskQuestionOpen, setIsAskQuestionOpen] = useState(false);
@@ -20,6 +20,7 @@ const Community = () => {
   return (
     <>
       {/* Background Content */}
+      <div className="min-h-screen bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text p-6">
       <div
         className={`bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text flex-1 p-6 ${isAskQuestionOpen ? 'opacity-50 pointer-events-none' : ''}`}
       >
@@ -28,8 +29,8 @@ const Community = () => {
 
       {isAskQuestionOpen && <AskQuestion setIsAskQuestionOpen={setIsAskQuestionOpen} />}
 
-      <div className={`bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text flex flex-col h-screen p-4 w-full ${isAskQuestionOpen ? 'blur-md opacity-50 pointer-events-none' : ''}`}>
-        <div className="flex flex-col md:flex-row min-h-screen w-full">
+      <div className={`bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text flex flex-col h-screen w-full ${isAskQuestionOpen ? 'blur-md opacity-50 pointer-events-none' : ''}`}>
+        <div className="flex flex-col md:flex-row h-screen w-full">
           <Sidebar setSelectedTopicId={setSelectedTopicId} filteredTopics={filteredTopics} />
 
           <div className={`flex-1 p-6 ${isAskQuestionOpen ? 'opacity-50 pointer-events-none' : ''}`}>
@@ -37,8 +38,9 @@ const Community = () => {
           </div>
         </div>
       </div>
+      </div>
     </>
   );
 };
 
-export default Community;
+export default TopicList;

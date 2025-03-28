@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { User, BookOpen, MessageSquare, Edit2Icon, HeartIcon, Menu, X } from "lucide-react";
+import { User, BookOpen, MessageSquare, Edit2Icon, HeartIcon, Menu, X, MessageCircleDashed } from "lucide-react";
 import { useState, useEffect } from "react";
 import LogoutButton from "../auth/Logout";
 import ThemeToggle from "../components/Theme";
@@ -8,24 +8,80 @@ import { AppDispatch } from "../store";
 import { getProfile, editProfile } from "../features/userSlice"; 
 import { fetchCourses } from "../features/courseSlice";
 import { fetchTopics, Topic } from "../features/topicSlice";
+import { getChats } from "../features/chatSlice";
+import { getMentors } from "../features/mentorSlice";
+import MentorList from "../components/Mentor";
+import ChatUI from "../components/Chat";
 import { RootState } from "../store"; 
-import { Course } from "../features/courseSlice"; // Import the Course type
+import { Course } from "../features/courseSlice"; 
 import Loader from "../components/Loader";
 import Toaster from "../components/Toaster";
+
+// interface User {
+//   id: string;
+//   firstName: string;
+//   lastName: string;
+//   email: string;
+//   profile?: string;
+//   address?: string;
+//   city?: string;
+//   country?: string;
+// }
 
 const LearnerDashboard = () => {
   const [activeTab, setActiveTab] = useState("overview");
   const [SidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
-  const { currentUser , loading } = useSelector((state: RootState) => state.users); 
   const { courses } = useSelector((state: RootState) => state.courses);
   const { topics } = useSelector((state: RootState) => state.topics); 
+  // const { mentors, status, error } = useSelector((state: RootState) => state.mentors);
+  // const { chats } = useSelector((state: RootState) => state.chats);
+  
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
   const [filteredTopics, setFilteredTopics] = useState<Topic[]>([]); 
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  // const [selectedUser , setSelectedUser ] = useState<User | null>(null);
+  // const [messageContent, setMessageContent] = useState("");
+  const [selectedMentorId, setSelectedMentorId] = useState<string | null>(null);
   const [toaster, setToaster] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  
 
+  useEffect(() => {
+    dispatch(getProfile());
+  }, [dispatch]);
+  const { currentUser , loading } = useSelector((state: RootState) => state.users); 
+
+  console.log("Current", currentUser);
+
+  useEffect(() => {
+    if (currentUser ) {
+      dispatch(fetchCourses());
+      dispatch(fetchTopics());
+      dispatch(getMentors());
+    }
+  }, [dispatch, currentUser ]);
+
+  const handleSelectMentor = (mentorId: string) => {
+    setSelectedMentorId(mentorId);
+    dispatch(getChats(mentorId));
+  };
+
+  // const handleChatSelect = (chat: any) => {
+  //   setSelectedUser (chat.receiver);
+  //   setMessageContent("");
+  // };
+  
+  // const handleSendChat = () => {
+  //   if (messageContent.trim() && selectedUser ) {
+  //     const chatData = {
+  //       senderId: currentUser!.id,
+  //       receiverId: selectedUser .id,
+  //       content: messageContent,
+  //     };
+  //     dispatch(sendChat(chatData));
+  //     setMessageContent("");
+  //   }
+  // };
+  
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -39,12 +95,6 @@ const LearnerDashboard = () => {
   });
 
   useEffect(() => {
-    dispatch(getProfile());
-    dispatch(fetchCourses());
-    dispatch(fetchTopics());
-  }, [dispatch]);
-
-  useEffect(() => {
     if (currentUser ) {
       setFormData({
         firstName: currentUser .firstName,
@@ -52,7 +102,7 @@ const LearnerDashboard = () => {
         email: currentUser .email,
         phoneNumber: currentUser .phoneNumber || '',
         gender: currentUser .gender || '',
-        birthDate: currentUser .birthDate || '',
+        birthDate: currentUser .birthDate ? currentUser .birthDate.split('T')[0] : '',
         country: currentUser .country || 'Rwanda',
         city: currentUser .city || 'Kigali',
         address: currentUser .address || 'Rwanda',
@@ -92,10 +142,10 @@ const LearnerDashboard = () => {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (files && files.length > 0) {
-        const file = files[0];
-        setSelectedImage(file); // Store the selected image
+      const file = files[0];
+      setSelectedImage(file);
     } else {
-        alert("No file selected.");
+      alert("No file selected.");
     }
   };
 
@@ -112,18 +162,18 @@ const LearnerDashboard = () => {
     formDataToSend.append('city', formData.city);
     formDataToSend.append('address', formData.address);
     if (selectedImage) {
-        formDataToSend.append('profile', selectedImage); // Append the image file
+      formDataToSend.append('profile', selectedImage);
     }
   
     try {
-        const response = await dispatch(editProfile(formDataToSend));
-        if (response.meta.requestStatus === 'fulfilled') {
-            showToaster('Profile updated successfully!', 'success');
-        } else {
-            showToaster('Failed to update profile.', 'error');
-        }
+      const response = await dispatch(editProfile(formDataToSend));
+      if (response.meta.requestStatus === 'fulfilled') {
+        showToaster('Profile updated successfully!', 'success');
+      } else {
+        showToaster('Failed to update profile.', 'error');
+      }
     } catch (error) {
-        showToaster('An error occurred while updating the profile.', 'error');
+      showToaster('An error occurred while updating the profile.', 'error');
     }
   };
 
@@ -183,6 +233,16 @@ const LearnerDashboard = () => {
           </li>
           <li>
             <button
+              onClick={() => setActiveTab("mentors")}
+              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${
+                    activeTab === "mentors" ? "bg-light-primary text-white" : "hover:bg-light-secondary"
+                }`}
+            >
+              <MessageCircleDashed /> Mentors
+            </button>
+          </li>
+          <li>
+            <button
               onClick={() => setActiveTab("community")}
               className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${
                     activeTab === "community" ? "bg-light-primary text-white" : "hover:bg-light-secondary"
@@ -211,7 +271,7 @@ const LearnerDashboard = () => {
           <section className="w-full justify-center items-center mt-12 p-6 text-justify dark:text-dark-text">
             <h1 className="text-2xl font-bold mb-4 text-center">Welcome, {loading ? <Loader /> : currentUser ?.firstName}!</h1>
             {currentUser  && (
-              <div className="text-center">
+              <div className="flex flex-col justify-center items-center text-center">
                 <div className="flex flex-col mx-auto items-center">
                   <img 
                     src={currentUser .profile || "/square.jpg"} 
@@ -229,22 +289,23 @@ const LearnerDashboard = () => {
                     <Edit2Icon className="m-2 text-light-primary cursor-pointer" />
                   </label>
                 </div>
-                <div className="border border-light-secondary mt-9 p-5 space-y-6">
-                  <form onSubmit={handleEditProfile} className="flex flex-col space-y-4">
+                <div className="mt-9 p-4 w-full lg:w-1/2 dark:border border-dark-gray space-y-4 shadow-lg">
+                  <form onSubmit={handleEditProfile} className="flex flex-col m-auto space-y-4">
                     <label className="p-3">Email</label>
                     <input
                       type="email"
                       name="email"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.email}
                       onChange={handleChange}
+                      readOnly
                     />
 
                     <label className="p-3">First Name</label>
                     <input
                       type="text"
                       name="firstName"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.firstName}
                       onChange={handleChange}
                     />
@@ -253,7 +314,7 @@ const LearnerDashboard = () => {
                     <input
                       type="text"
                       name="lastName"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.lastName}
                       onChange={handleChange}
                     />
@@ -262,7 +323,7 @@ const LearnerDashboard = () => {
                     <input
                       type="text"
                       name="gender"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.gender}
                       onChange={handleChange}
                     />
@@ -271,7 +332,7 @@ const LearnerDashboard = () => {
                     <input
                       type="date"
                       name="birthDate"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.birthDate}
                       onChange={handleChange}
                     />
@@ -280,7 +341,7 @@ const LearnerDashboard = () => {
                     <input
                       type="text"
                       name="country"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.country}
                       onChange={handleChange}
                     />
@@ -289,7 +350,7 @@ const LearnerDashboard = () => {
                     <input
                       type="text"
                       name="city"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.city}
                       onChange={handleChange}
                     />
@@ -298,7 +359,7 @@ const LearnerDashboard = () => {
                     <input
                       type="text"
                       name="address"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.address}
                       onChange={handleChange}
                     />
@@ -307,7 +368,7 @@ const LearnerDashboard = () => {
                     <input
                       type="text"
                       name="phoneNumber"
-                      className="text-light-text p-3"
+                      className="text-light-text bg-light-gray dark:bg-dark-gray dark:text-dark-text p-3"
                       value={formData.phoneNumber}
                       onChange={handleChange}
                     />
@@ -321,7 +382,7 @@ const LearnerDashboard = () => {
                 </div>
               </div>
             )}
-            <p className="text-gray-600 dark:text-gray-300 mt-5">
+            <p className="text-center text-gray-600 dark:text-gray-300 mt-5">
               Continue your journey and achieve your learning goals.
             </p>
           </section>
@@ -330,10 +391,10 @@ const LearnerDashboard = () => {
           <section className="text-justify dark:text-dark-text">
             <h1 className="text-2xl font-bold mb-4 text-center">My Courses</h1>
             {filteredCourses.length > 0 ? (
-              filteredCourses.map((course: any) => (
+              filteredCourses.map((course: Course) => (
                 <div key={course.id} className="mb-4 p-4 border rounded shadow">
                   <h2 className="text-lg font-semibold">{course.title}</h2>
-                  <p>Progress: {localStorage.getItem(`course-${course.id}-user-${currentUser?.id}-progress`) || "0"}%</p>
+                  <p>Progress: {localStorage.getItem(`course-${course.id}-user-${currentUser ?.id}-progress`) || "0"}%</p>
                   <Link to={`/courses/${course.id}`} className="text-orange-500">View Course</Link>
                 </div>
               ))
@@ -342,21 +403,55 @@ const LearnerDashboard = () => {
             )}
           </section>
         )}
+        {activeTab === "mentors" && (
+          <section className="w-full mt-12 p-6 dark:text-dark-text">
+            <h1 className="text-2xl font-bold mb-4 text-center">Mentors</h1>
+            <div className="flex flex-col sm:flex-row">
+              {/* Left column: Mentor List */}
+              <div className="w-full ms:w-1/2 border-r pr-4">
+                <MentorList onSelectMentor={handleSelectMentor} selectedMentorId={selectedMentorId} />
+              </div>
+              {/* Right column: Chat area */}
+              {selectedMentorId ? (
+                <div className="w-full sm:w-1/2">
+                  <ChatUI mentorId={selectedMentorId} />
+                </div>
+              ): (
+                <div className="flex h-96 items-center justify-center border rounded">
+                  <p className="text-center text-gray-500">
+                    No conversation selected. 
+                  </p>
+                </div>
+              )}
+              {/* <div className="w-2/3 pl-4">
+                {selectedMentorId ? (
+                  <ChatUI mentorId={selectedMentorId} />
+                ) : (
+                  <div className="flex h-96 items-center justify-center border rounded">
+                    <p className="text-center text-gray-500">
+                      No conversation selected. 
+                    </p>
+                  </div>
+                )}
+              </div> */}
+            </div>
+          </section>
+        )}
         {activeTab === "community" && (
           <section className="text-justify dark:text-dark-text">
-          <h1 className="text-2xl font-bold mb-4 text-center text-light-secondary">Liked on Community Page</h1>
-          {filteredTopics.length > 0 ? (
-            filteredTopics.map((topic: Topic) => (
-              <div key={topic.id} className="mb-4 p-4 border rounded shadow">
-                <h2 className="text-lg font-semibold">{topic.content}</h2>
-                <p>Posted by: {topic.user.userName}</p>
-                <p>Likes: {topic.likes.length}</p>
-                <Link to={`/community`} className="text-orange-500">View Topic</Link>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-600 dark:text-gray-300">No liked topics found.</p>
-          )}
+            <h1 className="text-2xl font-bold mb-4 text-center text-light-secondary">Liked on Community Page</h1>
+            {filteredTopics.length > 0 ? (
+              filteredTopics.map((topic: Topic) => (
+                <div key={topic.id} className="mb-4 p-4 border rounded shadow">
+                  <h2 className="text-lg font-semibold">{topic.content}</h2>
+                  <p>Posted by: {topic.user.userName}</p>
+                  <p>Likes: {topic.likes.length}</p>
+                  <Link to={`/community`} className="text-orange-500">View Topic</Link>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-600 dark:text-gray-300">No liked topics found.</p>
+            )}
           </section>
         )}
       </main>

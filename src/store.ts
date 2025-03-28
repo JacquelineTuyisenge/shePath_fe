@@ -7,6 +7,8 @@ import topicReducer from "./features/topicSlice";
 import messageReducer from "./features/messageSlice";
 import commentReducer from "./features/commentSlice";
 import likeReducer from "./features/likeSlice";
+import chatReducer from "./features/chatSlice";
+import mentorReducer from "./features/mentorSlice";
 
 export const store = configureStore({
     reducer: {
@@ -17,7 +19,9 @@ export const store = configureStore({
         topics: topicReducer,
         sms: messageReducer,
         comments: commentReducer,
-        likes: likeReducer
+        likes: likeReducer,
+        chats: chatReducer,
+        mentors: mentorReducer,
     },
 });
 

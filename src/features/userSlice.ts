@@ -52,7 +52,6 @@ export const getProfile = createAsyncThunk<User, void>(
         try {
             const response = await axiosInstance.get("/api/auth/profile");
 
-            console.log("prifilee", response.data.userProfile);
             return response.data.userProfile;
         } catch (error: any) {
             return rejectWithValue(error.response?.data?.message || "failed to fetch profile!");

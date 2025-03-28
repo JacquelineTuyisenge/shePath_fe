@@ -29,6 +29,7 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
   const [editContent, setEditContent] = useState('');
   const [isEditing, setEditing] = useState(false);
   const [newImage, setNewImage] = useState<File | null>(null);
+  const [showAllComments, setShowAllComments] = useState(false);
 
   const topic = topics.find(t => t.id === topicId);
 
@@ -72,6 +73,10 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
     }
   };
 
+  const handleToggleComments = () => {
+    setShowAllComments(!showAllComments);
+  };
+
   const handleToggleLike = () => {
     // Check if the topic is defined
     if (!topic) {
@@ -97,6 +102,8 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
         likes: updatedLikesCount,
     };
 
+    console.log('', updateTopic)
+
     // Then dispatch the async thunk to update the server
     dispatch(toggleLike({ topicId })).then((result) => {
         if (toggleLike.fulfilled.match(result)) {
@@ -118,7 +125,7 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
       {loading ? (
         <Loader />
       ) : (
-        <div className="p-4 bg-light-background dark:bg-dark-background shadow-md rounded-lg">
+        <div className="h-screen p-4 bg-light-background dark:bg-dark-background shadow-md rounded-lg">
           {topic ? (
             <>
               <h1 className="text-2xl font-semibold">{topic.content}</h1>
@@ -185,15 +192,24 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
                     <FaRegHeart className="text-2xl hover:text-3xl transform"/> {topic?.likes.length}
                   </button>
                 </div>
-                {topic?.comments?.length > 0 ? (
-                  topic.comments.map((comment: any) => (
-                    <div key={comment.id} className="bg-light-gray dark:bg-dark-gray text-light-text dark:text-light-gray p-4 mt-5 rounded-lg mb-2">
-                      <p className="">{comment.content}</p>
-                    </div>
-                  ))
-                ) : (
-                  <p>No comments yet.</p>
-                )}
+                <div className="bg-light-gray p-4 m-4 dark:bg-dark-gray text-light-text dark:text-light-gray rounded-lg">
+                  {topic?.comments?.length > 0 ? (
+                    <>
+                      {topic.comments.slice(0, showAllComments ? topic.comments.length : 3).map((comment: any) => (
+                        <div key={comment.id}>
+                          <p className="">{comment.content}</p>
+                        </div>
+                      ))}
+                      {topic.comments.length > 3 && (
+                        <button onClick={handleToggleComments} className="text-orange-500 mt-2">
+                          {showAllComments ? "Show Less" : "Show More"}
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <p>No comments yet.</p>
+                  )}
+                </div>
               </div>
             </>
           ) : (

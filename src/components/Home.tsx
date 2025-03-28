@@ -28,7 +28,7 @@ const HomePage: React.FC = () => {
           <motion.h2 className="text-3xl md:text-5xl font-bold leading-tight pb-6">
             <span className="text-light-secondary">{t("journeyBegins")}</span>
           </motion.h2>
-          <motion.p className="mb-4 md:text-2xl text-justify text-lg text-dark-gray dark:text-light-gray pb-5" {...fadeInUp}>
+          <motion.p className="mb-4 mtext-lg md:text-xl  text-justify text-dark-gray dark:text-light-gray pb-5" {...fadeInUp}>
             {t("mission_desc")}
           </motion.p>
           <motion.button 

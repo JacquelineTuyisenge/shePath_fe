@@ -98,7 +98,7 @@ const Footer = () => {
             <a href="#" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
               <FaTwitter />
             </a>
-            <a href="#" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
+            <a href="https://www.linkedin.com/in/tuyisenge-jacqueline-69b393240/" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
               <FaLinkedin />
             </a>
             <a href="#" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
