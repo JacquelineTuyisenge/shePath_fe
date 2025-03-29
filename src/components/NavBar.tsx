@@ -5,6 +5,9 @@ import { Menu, X, UserCircle } from "lucide-react";
 import { FaSignInAlt } from "react-icons/fa";
 import LanguageToggle from "./Translate";
 import ThemeToggle from "./Theme";
+import { useSelector } from "react-redux";
+import { RootState } from "../store";
+import { isAuthenticated } from "../utils/utils";
 
 interface NavBarProps {
   onLoginBtnClick: () => void;
@@ -13,24 +16,19 @@ interface NavBarProps {
 const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [authStatus, setAuthStatus] = useState(false);
   const navigate = useNavigate();
+  const { currentUser } = useSelector((state: RootState) => state.users);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const role = localStorage.getItem("role");
-
-    if (token) {
-      setIsAuthenticated(true);
-      setUserRole(role);
-    }
+    setAuthStatus(isAuthenticated());
   }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
   const getDashboardRoute = () => {
-    switch (userRole) {
+    const role = localStorage.getItem("role");
+    switch (role) {
       case "Admin":
         return "/admin";
       case "Learner":
@@ -47,7 +45,6 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
   return (
     <nav className="bg-light-gray w-full dark:bg-dark-gray p-4 flex justify-between items-center shadow-md fixed top-0 z-50">
       <div className="flex justify-between items-center w-full md:mx-4">
-        {/* Logo and Hamburger Icon */}
         <div className="flex justify-between items-center w-full">
           <button onClick={() => navigate("/")}>
             <h1 className="text-light-primary font-bold text-2xl">ShePath</h1>
@@ -70,46 +67,40 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
               <button
                 onClick={() => {
                   const targetElement = document.getElementById("about");
-                  if (targetElement) {
-                    targetElement.scrollIntoView({ behavior: "smooth" });
-                  }
+                  if (targetElement) targetElement.scrollIntoView({ behavior: "smooth" });
                 }}
               >
-               {t("about")}
+                {t("about")}
               </button>
             </li>
-            
             <li>
               <button
-                onClick={() =>
-                  document.getElementById("programs")?.scrollIntoView({ behavior: "smooth" })
-                }
+                onClick={() => document.getElementById("programs")?.scrollIntoView({ behavior: "smooth" })}
                 className="hover:text-light-primary"
               >
                 {t("programs")}
               </button>
             </li>
             <li>
-            <Link className="hover:text-light-primary cursor-pointer" to="/community">{t("community")}</Link>
+              <Link className="hover:text-light-primary cursor-pointer" to="/community">
+                {t("community")}
+              </Link>
             </li>
             <li>
               <button
-                onClick={() =>
-                  document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })
-                }
+                onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}
                 className="hover:text-light-primary"
               >
                 {t("contact")}
               </button>
             </li>
           </ul>
-
           <div className="flex flex-col space-y-4 mt-4 text-light-text dark:text-dark-text">
-                <div className="flex gap-2 px-4">
-                  <LanguageToggle />
-                  <ThemeToggle />
-                </div>
-            {isAuthenticated ? (
+            <div className="flex gap-2 px-4">
+              <LanguageToggle />
+              <ThemeToggle />
+            </div>
+            {authStatus ? (
               <div className="flex gap-1 px-2">
                 <Link
                   to={getDashboardRoute()}
@@ -117,7 +108,15 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
                 >
                   {t("dashboard")}
                 </Link>
-                <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+                {currentUser?.profile ? (
+                  <img
+                    src={currentUser.profile}
+                    alt="Profile"
+                    className="w-8 h-8 rounded-full cursor-pointer"
+                  />
+                ) : (
+                  <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+                )}
               </div>
             ) : (
               <button
@@ -133,35 +132,33 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
       </div>
 
       {/* Desktop Menu */}
-      <div className="hidden md:flex space-x-6 mx-2">
+      <div className="hidden md:flex space-x-6 mx-2 mr-6"> {/* Added mr-6 for right margin */}
         <ul className="flex space-x-4 items-center">
           <li className="hover:text-light-primary cursor-pointer">
             <button
-                  className="flex items-center justify-center"
-                  onClick={() => {
-                    const targetElement = document.getElementById("about");
-                    if (targetElement) {
-                      targetElement.scrollIntoView({ behavior: "smooth" });
-                    }
-                  }}
-                >
-                  <p className="whitespace-nowrap">{t("about")}</p>
-              </button>
+              className="flex items-center justify-center"
+              onClick={() => {
+                const targetElement = document.getElementById("about");
+                if (targetElement) targetElement.scrollIntoView({ behavior: "smooth" });
+              }}
+            >
+              <p className="whitespace-nowrap">{t("about")}</p>
+            </button>
           </li>
           <li className="hover:text-light-primary cursor-pointer">
             <button
               onClick={() => {
                 const targetElement = document.getElementById("programs");
-                if (targetElement) {
-                  targetElement.scrollIntoView({ behavior: "smooth" });
-                }
+                if (targetElement) targetElement.scrollIntoView({ behavior: "smooth" });
               }}
             >
               {t("programs")}
             </button>
           </li>
           <li>
-            <Link className="hover:text-light-primary cursor-pointer" to="/community">{t("community")}</Link>
+            <Link className="hover:text-light-primary cursor-pointer" to="/community">
+              {t("community")}
+            </Link>
           </li>
           <li className="hover:text-light-primary cursor-pointer">
             <button onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}>
@@ -169,11 +166,10 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
             </button>
           </li>
         </ul>
-
         <div className="flex items-center space-x-4">
           <LanguageToggle />
           <ThemeToggle />
-          {isAuthenticated ? (
+          {authStatus ? (
             <div className="flex items-center space-x-4">
               <Link
                 to={getDashboardRoute()}
@@ -181,7 +177,15 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
               >
                 {t("dashboard")}
               </Link>
-              <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+              {currentUser?.profile ? (
+                <img
+                  src={currentUser.profile}
+                  alt="Profile"
+                  className="w-8 h-8 rounded-full cursor-pointer"
+                />
+              ) : (
+                <UserCircle className="w-8 h-8 text-light-primary cursor-pointer" />
+              )}
             </div>
           ) : (
             <button

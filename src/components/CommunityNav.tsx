@@ -10,27 +10,26 @@ interface NavProps {
 
 export function Nav({ searchTerm, setSearchTerm, setIsAskQuestionOpen }: NavProps) {
   return (
-    <div className="bg-light-gray w-full dark:bg-dark-gray flex flex-col sm:flex-row gap-3 justify-between bg-light-gray p-6 items-center">
-      <div className="text-light-secondary text-3xl font-bold">Community Page</div>
-      <Link to="/" className="text-xl hover:text-light-primary">Home</Link>
-
-      <div className="space-y-2 sm:space-y-0 flex sm:flex-row items-center gap-4">
+    <nav className="bg-light-gray dark:bg-dark-gray p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+      <div className="text-light-secondary text-2xl sm:text-3xl font-bold">Community Page</div>
+      <Link to="/" className="text-lg sm:text-xl hover:text-light-primary">Home</Link>
+      <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
         <ThemeToggle />
         <button
-          className="flex gap-2 justify-center border border-orange-500 rounded p-2 items-center text-xl hover:bg-gray-400 hover:text-white"
-          onClick={() => setIsAskQuestionOpen(true)}
-        >
-          <FaPlus className="text-orange-500 text-xl" />
-        </button>
-
+        className="flex items-center gap-2 border border-orange-500 rounded p-2 text-lg hover:bg-gray-400 hover:text-white"
+        onClick={() => setIsAskQuestionOpen(true)}
+      >
+        <FaPlus className="text-orange-500" />
+        <span className="hidden sm:inline">Ask</span>
+      </button>
         <input
           type="text"
-          className="p-3 rounded border border-orange-500 bg-light-gray dark:bg-dark-gray focus:border-orange-600 focus:ring-0 w-full sm:w-64"
+          className="p-2 rounded border border-orange-500 bg-light-gray dark:bg-dark-gray focus:border-orange-600 focus:ring-0 w-full sm:w-64"
           placeholder="Search topics"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
         />
       </div>
-    </div>
+    </nav>
   );
 }

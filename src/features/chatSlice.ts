@@ -5,17 +5,9 @@ interface ChatMessage {
     createdAt: string;
     id: string;
     sender: {
-        id: string; // Assuming you have an ID for the sender
-        firstName: string;
-        lastName: string;
-        // Add other fields as necessary
-    };
-    receiver: {
-        id: string; // Assuming you have an ID for the receiver
-        firstName: string;
-        lastName: string;
-        // Add other fields as necessary
-    };
+      profile: string; id: string; firstName: string; lastName: string 
+};
+    receiver: { id: string; firstName: string; lastName: string };
     content: string;
     timestamp: string;
 }
@@ -26,14 +18,12 @@ interface ChatState {
     error?: string | null;
 }
 
-// Initial state with type
 const initialState: ChatState = {
     chats: [],
     status: 'idle',
     error: null,
 };
 
-// Async thunks with explicit return types
 export const sendChat = createAsyncThunk<ChatMessage, { senderId: string; receiverId: string; content: string }>(
     'chats/sendChat',
     async (chatData) => {
@@ -53,16 +43,22 @@ export const getChats = createAsyncThunk<ChatMessage[], string>(
 export const getAllChats = createAsyncThunk<ChatMessage[], void>(
     'chats/getAllChats',
     async () => {
-        const response = await axiosInstance.get('/chats/'); 
+        const response = await axiosInstance.get('/chats/');
         return response.data.chats;
     }
 );
 
-// Slice with pending, fulfilled, and rejected cases
 const chatSlice = createSlice({
     name: 'chats',
     initialState,
-    reducers: {},
+    reducers: {
+        addChat: (state, action: PayloadAction<ChatMessage>) => {
+            state.chats.push(action.payload);
+        },
+        removeChat: (state, action: PayloadAction<string>) => {
+            state.chats = state.chats.filter((chat) => chat.id !== action.payload);
+        },
+    },
     extraReducers: (builder) => {
         builder
             .addCase(getChats.pending, (state) => {
@@ -81,6 +77,8 @@ const chatSlice = createSlice({
             })
             .addCase(sendChat.fulfilled, (state, action: PayloadAction<ChatMessage>) => {
                 state.status = 'succeeded';
+                const tempIndex = state.chats.findIndex((chat) => chat.id.startsWith("temp-"));
+                if (tempIndex !== -1) state.chats.splice(tempIndex, 1); // Replace temp message
                 state.chats.push(action.payload);
             })
             .addCase(sendChat.rejected, (state, action) => {
@@ -101,4 +99,5 @@ const chatSlice = createSlice({
     },
 });
 
+export const { addChat, removeChat } = chatSlice.actions;
 export default chatSlice.reducer;

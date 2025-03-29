@@ -34,7 +34,7 @@ const AdminDashboard = () => {
   const dispatch = useAppDispatch();
   const [searchTerm, setSearchTerm] = useState(""); // For user search
   const { users, loading, error } = useAppSelector((state: any) => state.users);
-  const { currentUser, loading: userLoading } = useSelector((state: RootState) => state.users);
+  const { currentUser } = useSelector((state: RootState) => state.users);
   const { courses } = useAppSelector((state: any) => state.courses);
   const { messages: initialMessages } = useAppSelector((state: RootState) => state.sms); // Renamed to avoid confusion
   const { categories = [], loading: categoryLoading } = useAppSelector((state: any) => state.categories);
@@ -242,35 +242,137 @@ const AdminDashboard = () => {
 
         {/* Profile Tab */}
         {activeTab === "profile" && (
-          <section className="w-full max-w-2xl mx-auto mt-12">
-            <h1 className="text-3xl font-bold mb-6 text-center text-light-secondary dark:text-dark-secondary">
-              Welcome, {userLoading ? <Loader /> : currentUser?.firstName || "User"}!
-            </h1>
-            {currentUser && (
-              <div className="bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg">
-                <div className="flex flex-col items-center mb-6">
-                  <img src={currentUser.profile || "/square.jpg"} alt="Profile" className="w-24 h-24 rounded-full mb-3 border-4 border-light-primary dark:border-dark-primary" />
-                  <input type="file" accept="image/*" onChange={handleImageChange} className="hidden" id="imageUpload" />
-                  <label htmlFor="imageUpload"><Edit2Icon className="text-light-primary dark:text-dark-primary cursor-pointer hover:text-light-accent dark:hover:text-dark-accent" size={20} /></label>
+          <section className="w-full max-w-4xl mx-auto mt-12 p-6 bg-light-gray dark:bg-dark-gray rounded-lg shadow-lg dark:text-dark-text">
+            <h1 className="text-3xl font-bold mb-6 text-center text-light-primary">Your Profile</h1>
+            {loading ? (
+              <Loader />
+            ) : currentUser ? (
+              <div className="space-y-6">
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <img
+                      src={currentUser.profile || "/square.jpg"}
+                      alt="Profile"
+                      className="w-32 h-32 rounded-full border-4 border-light-primary object-cover"
+                    />
+                    <label htmlFor="imageUpload" className="absolute bottom-0 right-0 bg-light-primary p-2 rounded-full cursor-pointer">
+                      <Edit2Icon className="w-5 h-5 text-white" />
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="imageUpload"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-semibold mt-4">{currentUser.firstName} {currentUser.lastName}</h2>
+                  <p className="text-gray-600 dark:text-gray-300">{currentUser.email}</p>
                 </div>
-                <form onSubmit={handleEditProfile} className="grid gap-4 sm:grid-cols-2">
-                  {Object.entries(formData).map(([key, value]) => (
-                    <div key={key} className="flex flex-col">
-                      <label className="text-sm font-medium mb-1 capitalize">{key.replace(/([A-Z])/g, " $1")}</label>
-                      <input
-                        type={key === "email" ? "email" : key === "birthDate" ? "date" : "text"}
-                        name={key}
-                        value={value}
-                        onChange={handleChange}
-                        className="p-2 rounded-lg bg-white dark:bg-black border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
-                      />
-                    </div>
-                  ))}
-                  <button type="submit" className="sm:col-span-2 mt-4 p-3 bg-light-primary dark:bg-dark-primary text-white rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">Save Profile</button>
+                <form onSubmit={handleEditProfile} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">First Name</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      className="w-full p-3 rounded bg-gray-200 dark:bg-gray-700 text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600 cursor-not-allowed"
+                      value={formData.email}
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <input
+                      type="text"
+                      name="phoneNumber"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Gender</label>
+                    <input
+                      type="text"
+                      name="gender"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.gender}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Birth Date</label>
+                    <input
+                      type="date"
+                      name="birthDate"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.birthDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.country}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.city}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.address}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="md:col-span-2 flex justify-center">
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-light-primary text-white rounded-lg hover:bg-orange-600 transition"
+                    >
+                      Save Profile
+                    </button>
+                  </div>
                 </form>
               </div>
+            ) : (
+              <p className="text-center text-gray-600 dark:text-gray-300">Unable to load profile data.</p>
             )}
-            <p className="text-gray-600 dark:text-gray-300 mt-6 text-center">Continue your journey and achieve your learning goals.</p>
           </section>
         )}
 
