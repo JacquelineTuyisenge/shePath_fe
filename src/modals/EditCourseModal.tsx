@@ -1,9 +1,13 @@
-import { useEffect } from "react";
-import { useForm } from "react-hook-form";
+// EditCourseModal.tsx
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector, TypedUseSelectorHook } from "react-redux";
-import { Editor } from "@tinymce/tinymce-react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
 import { updateCourse, clearMessage } from "../features/courseSlice";
+import { fetchCourseCategories } from "../features/courceCategorySlice";
 import { AppDispatch, RootState } from "../store";
+import Loader from "../components/Loader";
+import Toaster from "../components/Toaster";
 
 interface EditCourseModalProps {
   isOpen: boolean;
@@ -11,83 +15,179 @@ interface EditCourseModalProps {
   course: any;
 }
 
-const EditCourseModal = ({ isOpen, onClose, course }: EditCourseModalProps) => {
-  const { register, handleSubmit, reset, setValue } = useForm<{ 
-    title: string; 
-    description: string; 
-    content: string; 
-  }>({
-    defaultValues: { 
-      title: course?.title, 
-      description: course?.description, 
-      content: course?.content
-    }
-  });
+interface Category {
+  id: string | number;
+  name: string;
+}
 
+const EditCourseModal = ({ isOpen, onClose, course }: EditCourseModalProps) => {
   const useAppDispatch = () => useDispatch<AppDispatch>();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
-  const { message, error } = useAppSelector((state) => state.courses);
   const dispatch = useAppDispatch();
+  const { message, error, loading } = useAppSelector((state) => state.courses);
+  const { categories = [] } = useAppSelector((state: RootState) => state.categories);
 
-  const onSubmit = async (data: { title: string; description: string; content: string }) => {
-    try {
-        await dispatch(updateCourse({
-            id: course.id,
-            title: data.title,
-            description: data.description,
-            content: data.content,
-        }));
-        reset();  // Reset form after successful update
-    } catch (err) {
-        // Handle any errors during the update
-    }
+  const [title, setTitle] = useState(course?.title || "");
+  const [description, setDescription] = useState(course?.description || "");
+  const [content, setContent] = useState(course?.content || "");
+  const [categoryId, setCategoryId] = useState(course?.categoryId || "");
+  const [image, setImage] = useState<File | null>(null);
+  const [toaster, setToaster] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
-  };
+  useEffect(() => {
+    dispatch(fetchCourseCategories());
+  }, [dispatch]);
+
+  useEffect(() => {
+    setTitle(course?.title || "");
+    setDescription(course?.description || "");
+    setContent(course?.content || "");
+    setCategoryId(course?.categoryId || "");
+    setImage(null);
+  }, [course]);
 
   useEffect(() => {
     if (message) {
+      setToaster({ message, type: "success" });
       setTimeout(() => {
         dispatch(clearMessage());
+        setToaster(null);
         onClose();
-      }, 2000);
+      }, 3000);
     }
-  }, [message, dispatch, onClose]);
+    if (error) {
+      setToaster({ message: error, type: "error" });
+      setTimeout(() => setToaster(null), 3000);
+    }
+  }, [message, error, dispatch, onClose]);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const formData = new FormData();
+    formData.append("id", course.id);
+    formData.append("title", title);
+    formData.append("description", description);
+    formData.append("content", content);
+    formData.append("categoryId", categoryId);
+    if (image) {
+      formData.append("image", image);
+    }
+
+    dispatch(updateCourse(formData));
+  };
+
+  // Quill modules configuration
+  const quillModules = {
+    toolbar: [
+      [{ header: [1, 2, 3, false] }],
+      ["bold", "italic", "underline", "strike"],
+      [{ list: "ordered" }, { list: "bullet" }],
+      ["link", "image"],
+      ["clean"],
+    ],
+  };
+
+  const quillFormats = [
+    "header",
+    "bold",
+    "italic",
+    "underline",
+    "strike",
+    "list",
+    "bullet",
+    "link",
+    "image",
+  ];
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="dark:bg-gray-800 border border-gray-700 p-6 rounded-lg shadow-lg w-96">
+      <div className="bg-light-gray dark:bg-dark-gray border border-light-gray dark:border-dark-gray p-6 rounded-lg shadow-lg w-96 text-light-text dark:text-dark-text" dir="ltr">
         <h2 className="text-xl font-bold mb-4">Edit Course</h2>
-        {message && <p className="text-green-600">{message}</p>}
-        {error && <p className="text-red-600">{error}</p>}
+        {toaster && <Toaster message={toaster.message} type={toaster.type} />}
+        {loading && <Loader />}
 
-        <form onSubmit={handleSubmit(onSubmit)}>
+        <form onSubmit={handleSubmit}>
+          <select
+            className="w-full p-2 border rounded mb-4 bg-white dark:bg-black text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+            value={categoryId}
+            onChange={(e) => setCategoryId(e.target.value)}
+            required
+            disabled={loading}
+          >
+            <option value="">Select Category</option>
+            {categories.length > 0 ? (
+              categories.map((category: Category) => (
+                <option key={category.id} value={String(category.id)}>
+                  {category.name}
+                </option>
+              ))
+            ) : (
+              <option disabled>No categories available</option>
+            )}
+          </select>
           <input
-            {...register("title", { required: true })}
+            type="text"
             placeholder="Course Title"
-            className="w-full p-2 border rounded mb-4 text-black"
+            className="w-full p-2 border rounded mb-4 bg-white dark:bg-black text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            required
+            disabled={loading}
           />
           <input
-            {...register("description", { required: true })}
-            placeholder="Course Description"
-            className="w-full p-2 border rounded mb-4 text-black"
+            type="text"
+            placeholder="Description"
+            className="w-full p-2 border rounded mb-4 bg-white dark:bg-black text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+            disabled={loading}
           />
-          <Editor
-            apiKey="t8uuywazitnms1i0ekktzks3xhzj16udserdmpfvqnxajsq2"
-            initialValue={course?.content}
-            init={{
-              height: 300,
-              menubar: false,
-              plugins: ["lists link image code"]
-            }}
-            onEditorChange={(content: string) => setValue("content", content)}
+          <ReactQuill
+            value={content}
+            onChange={setContent}
+            modules={quillModules}
+            formats={quillFormats}
+            className="mb-4 bg-white dark:bg-black text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray"
+            readOnly={loading}
+            style={{ direction: "ltr", textAlign: "left" }}
           />
+          <div className="mt-4">
+            <input
+              type="file"
+              accept="image/*"
+              className="w-full p-2 border rounded mb-4 bg-white dark:bg-black text-light-text dark:text-dark-text border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+              onChange={handleImageChange}
+              disabled={loading}
+            />
+            {image ? (
+              <img src={URL.createObjectURL(image)} alt="Preview" className="mt-2 w-32 h-32 object-cover rounded" />
+            ) : course?.image ? (
+              <img src={course.image} alt="Current" className="mt-2 w-32 h-32 object-cover rounded" />
+            ) : null}
+          </div>
           <div className="flex justify-end gap-2 mt-4">
-            <button type="button" onClick={onClose} className="bg-gray-300 p-2 rounded">
+            <button
+              type="button"
+              onClick={onClose}
+              className="bg-light-gray dark:bg-dark-gray p-2 rounded hover:bg-gray-300 dark:hover:bg-gray-700 transition"
+              disabled={loading}
+            >
               Cancel
             </button>
-            <button type="submit" className="bg-light-primary text-white p-2 rounded">
+            <button
+              type="submit"
+              className="bg-light-primary dark:bg-dark-primary text-white p-2 rounded hover:bg-light-accent dark:hover:bg-dark-accent transition"
+              disabled={loading}
+            >
               Save Changes
             </button>
           </div>

@@ -1,97 +1,183 @@
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCourses } from "../features/courseSlice";
+import { fetchCourses, fetchCourseProgress } from "../features/courseSlice";
 import { fetchCourseCategories } from "../features/courceCategorySlice";
 import { RootState, AppDispatch } from "../store";
-import BackButton from "../buttons/Back";
-import { Link } from "react-router-dom";
-
-import pic from '../assets/Hero-bg.png';
-import educationImg from "../assets/education.jpg";
-import personalGrowthImg from "../assets/personalGrowth.jpg";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Navigation, Pagination } from "swiper/modules";
+import "swiper/swiper-bundle.css";
+import Loader from "./Loader";
+import Toaster from "./Toaster";
+import { FaArrowRight } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
+import { isAuthenticated } from "../utils/utils";
 import careerDevImg from "../assets/career.jpg";
-import healthImg from "../assets/health.jpg";
-import mentorshipImg from "../assets/empowerment.svg";
-import communityEngagementImg from "../assets/community.jpg";
 
-// Mapping of category names to images
-const categoryImageMap = {
-    "Education": educationImg,
-    "Personal Growth & Life skills": personalGrowthImg,
-    "Career & Professional Development": careerDevImg,
-    "Health & Well-being": healthImg,
-    "Mentorship": mentorshipImg,
-    "Community Engagement & Advocacy": communityEngagementImg,
+const CircularProgress = ({ percentage }: { percentage: number }) => {
+  const radius = 50;
+  const strokeWidth = 10;
+  const normalizedRadius = radius - strokeWidth * 0.5;
+  const circumference = normalizedRadius * 2 * Math.PI;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
+
+  return (
+    <svg height={radius * 2} width={radius * 2}>
+      <circle stroke="#e6e6e6" fill="transparent" strokeWidth={strokeWidth} r={normalizedRadius} cx={radius} cy={radius} />
+      <circle
+        stroke="#4caf50"
+        fill="transparent"
+        strokeWidth={strokeWidth}
+        r={normalizedRadius}
+        cx={radius}
+        cy={radius}
+        strokeDasharray={circumference + " " + circumference}
+        strokeDashoffset={strokeDashoffset}
+        style={{ transition: "stroke-dashoffset 0.5s ease 0s" }}
+      />
+      <text x="50%" y="50%" textAnchor="middle" stroke="#51c5ef" strokeWidth="1px" dy=".3em" fill="#000">
+        {Math.round(percentage)}%
+      </text>
+    </svg>
+  );
 };
 
-const CoursesList: React.FC = () => {
-    const dispatch = useDispatch<AppDispatch>();
-    const { courses = [], loading, error } = useSelector((state: RootState) => state.courses);
-    const { categories = [] } = useSelector((state: RootState) => state.categories);
-    const [selectedCategory, setSelectedCategory] = useState("");
-    const fakeProgress = Math.floor(Math.random() * 100) + 1;
+interface CoursesListProps {
+  setToaster?: (message: string, type: "success" | "error") => void;
+}
 
-    useEffect(() => {
-        dispatch(fetchCourses());
-        dispatch(fetchCourseCategories());
-    }, [dispatch]);
+const CoursesList: React.FC<CoursesListProps> = ({ setToaster }) => {
+  const navigate = useNavigate();
+  const dispatch = useDispatch<AppDispatch>();
+  const { courses, loading, error, progress: courseProgressMap } = useSelector((state: RootState) => state.courses);
+  const { categories = [] } = useSelector((state: RootState) => state.categories);
+  const { currentUser } = useSelector((state: RootState) => state.users);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [toasterMessage, setToasterMessage] = useState<string | null>(null);
 
-    const filteredCourses = selectedCategory
-        ? courses.filter((course) => course.categoryId === categories.find(cat => cat.name === selectedCategory)?.name)
-        : courses;
-
-    if (loading) return <p className="text-center text-lg text-light-text dark:text-dark-text">Loading courses...</p>;
-    if (error) return <p className="text-center text-red-500">{error}</p>;
-
-    return (
-        <div className="max-w-6xl px-7 min-h-screen bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text p-4">
-            {location.pathname === "/courses" && <BackButton />}
-            <div className="flex justify-between items-center mb-6">
-                <h2 className="text-2xl font-semibold">Explore Our Courses</h2>
-                <select
-                    className="p-2 border rounded-lg bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text shadow-sm focus:outline-none"
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    value={selectedCategory}
-                >
-                    <option value="">All Categories</option>
-                    {categories.map((category) => (
-                        <option key={category.id} value={category.name} className="bg-light-gray dark:bg-dark-gray">
-                            {category.name}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {filteredCourses.map((course) => {
-                    
-                    const courseImage = categoryImageMap[course.categoryId as keyof typeof categoryImageMap] || pic; // Default to pic if no match
-                    return (
-                        <div key={course.id} className="bg-light-gray dark:bg-dark-gray rounded-lg shadow-md overflow-hidden hover:shadow-lg transition">
-                            <img
-                                src={courseImage}
-                                alt={course.title}
-                                className="w-full h-40 object-cover"
-                            />
-                            <div className="p-4">
-                                <h3 className="text-lg font-bold">{course.title}</h3>
-                                <div className="mt-2 text-xs">Category: {course.categoryId}</div>
-                                <div className="w-full bg-light-accent dark:bg-dark-accent rounded-full h-2 mt-3">
-                                    <div className="bg-light-primary dark:bg-dark-primary h-2 rounded-full" style={{ width: `${fakeProgress}%` }}></div>
-                                </div>
-                                <Link
-                                    to={`/courses/${course.id}`}
-                                    className="block mt-3 text-sm font-medium underline"
-                                >
-                                    View Details
-                                </Link>
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
+  useEffect(() => {
+    dispatch(fetchCourses()).catch((err) => setToasterMessage(`Failed to fetch courses: ${err.message}`));
+    dispatch(fetchCourseCategories()).catch((err) =>
+      setToasterMessage(`Failed to fetch categories: ${err.message}`)
     );
+    if (currentUser) {
+      courses.forEach((course) => {
+        if (!courseProgressMap[course.id]) {
+          dispatch(fetchCourseProgress(course.id)).catch((err) =>
+            setToasterMessage(`Failed to fetch progress for course ${course.id}: ${err.message}`)
+          );
+        }
+      });
+    }
+  }, [dispatch, currentUser, courses.length]);
+
+  useEffect(() => {
+    if (error) {
+      setToasterMessage(error);
+      setTimeout(() => setToasterMessage(null), 3000);
+    }
+  }, [error]);
+
+  // Filter courses by matching course.categoryId (name) with category.name
+  const filteredCourses = selectedCategory
+    ? courses.filter((course) =>
+        categories.find((cat) => cat.id === selectedCategory)?.name === course.categoryId
+      )
+    : courses;
+
+  const sortedCourses = [...filteredCourses].sort((a, b) => {
+    const dateA = new Date(a.createdAt || "1970-01-01").getTime();
+    const dateB = new Date(b.createdAt || "1970-01-01").getTime();
+    return dateB - dateA; // Latest first
+  });
+
+  const handleViewDetails = (courseId: string) => {
+    if (!isAuthenticated()) {
+      if (setToaster) {
+        setToaster("Please log in to view course details", "error");
+      } else {
+        setToasterMessage("Please log in to view course details");
+        setTimeout(() => setToasterMessage(null), 3000);
+      }
+      return;
+    }
+    navigate(`/courses/${courseId}`);
+  };
+
+  return (
+    <div
+      id="programs"
+      className="max-h-screen w-full justify-center p-8 bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text"
+    >
+      {loading && <Loader />}
+      {!loading && (
+        <>
+          <div className="flex flex-wrap justify-between items-center mb-6 px-2">
+            <h2 className="text-2xl font-semibold">Programs</h2>
+            <select
+              className="p-3 text-center rounded-lg bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text shadow-sm focus:outline-none"
+              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={selectedCategory}
+            >
+              <option value="">All Categories</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id} className="bg-light-gray dark:bg-dark-gray">
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {sortedCourses.length === 0 && !error && (
+            <p className="text-center text-gray-600 dark:text-gray-300">No courses available for this category.</p>
+          )}
+          <Swiper
+            modules={[Navigation, Pagination]}
+            spaceBetween={20}
+            slidesPerView={1}
+            breakpoints={{ 640: { slidesPerView: 1 }, 768: { slidesPerView: 2 }, 1024: { slidesPerView: 3 } }}
+            navigation={{ nextEl: ".custom-next", prevEl: ".custom-prev" }}
+            pagination={{ clickable: true }}
+            className="w-full"
+          >
+            {sortedCourses.map((course) => {
+              const progress = currentUser ? courseProgressMap[course.id]?.progress || 0 : 0;
+              return (
+                <SwiperSlide key={course.id}>
+                  <div className="bg-light-gray dark:bg-dark-gray rounded-lg shadow-md overflow-hidden hover:shadow-lg transition h-full flex flex-col">
+                    <img
+                      src={course.image || careerDevImg}
+                      alt={course.title}
+                      className="w-full h-40 object-cover"
+                    />
+                    <div className="p-4 flex flex-col flex-grow justify-between">
+                      <h3 className="text-lg font-bold">{course.title}</h3>
+                      <div className="mt-2 text-xs">
+                        Category: {course.categoryId} {/* Already the name */}
+                      </div>
+                      <div className="flex items-center justify-between mt-3">
+                        <CircularProgress percentage={progress} />
+                        <button
+                          onClick={() => handleViewDetails(course.id)}
+                          className="mt-3 px-4 py-2 cursor-pointer flex items-center justify-center gap-2 bg-light-primary text-white rounded-lg shadow-md hover:bg-orange-600 transition"
+                        >
+                          View Details <FaArrowRight />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </SwiperSlide>
+              );
+            })}
+          </Swiper>
+          <div className="flex justify-between p-4">
+            <div className="custom-prev text-orange-500 hover:text-orange-700 cursor-pointer">Prev</div>
+            <div className="custom-next text-orange-500 hover:text-orange-700 cursor-pointer">Next</div>
+          </div>
+      {toasterMessage && <Toaster message={toasterMessage} type="error" />}
+
+        </>
+      )}
+    </div>
+  );
 };
 
 export default CoursesList;

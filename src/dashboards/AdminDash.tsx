@@ -1,9 +1,9 @@
+// AdminDashboard.tsx
 import { useEffect, useState } from "react";
 import Card from "../components/Card";
-
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { User, BookOpen, Award, Settings, Users, Menu, X, Edit, Trash, Key} from "lucide-react";
-import ThemeToggle from "../components/Theme";
+import { User, BookOpen, MessageCircle, Settings, Users, Menu, X, Edit, Trash, Key, BookIcon, Edit2Icon } from "lucide-react";
+import ThemeToggle from "../components/Theme"; // Using your existing ThemeToggle
 import { AppDispatch, RootState } from "../store";
 import AddRoleModal from "../modals/AddRole";
 import AddCourseModal from "../modals/AddCourse";
@@ -11,489 +11,603 @@ import AddCategoryModel from "../modals/AddCategory";
 import EditCourseModal from "../modals/EditCourseModal";
 import EditCatModel from "../modals/EditCategory";
 import { getUsers } from "../features/userSlice";
+import { getMessages } from "../features/messageSlice";
 import { deleteCourse, fetchCourses } from "../features/courseSlice";
 import { deleteCourseCategory, fetchCourseCategories } from "../features/courceCategorySlice";
-import { getRoles} from "../features/roleSlice";
-import { deleteRole } from "../features/roleSlice";
+import { getRoles, deleteRole } from "../features/roleSlice";
 import EditRoleModal from "../modals/EditRoleModal";
 import AssignRoleModal from "../modals/AssignRole";
 import LogoutButton from "../auth/Logout";
 import UserExpansionTrend from "../features/UserChart";
+import { getProfile, editProfile } from "../features/userSlice";
 import { Link } from "react-router-dom";
+import Toaster from "../components/Toaster";
+import Loader from "../components/Loader";
+import careerDevImg from "../assets/career.jpg";
 
+const ITEMS_PER_PAGE = 6; // Consistent items per page for all sections
 
 const AdminDashboard = () => {
   const useAppDispatch = () => useDispatch<AppDispatch>();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
   const dispatch = useAppDispatch();
+  const [searchTerm, setSearchTerm] = useState(""); // For user search
   const { users, loading, error } = useAppSelector((state: any) => state.users);
-  const {courses} = useAppSelector((state: any) => state.courses);
-      // const { categories = [] } = useSelector((state: RootState) => state.categories);
-  const {categories = [], loading: categoryLoading} = useAppSelector((state: any) => state.categories);
+  const { currentUser } = useSelector((state: RootState) => state.users);
+  const { courses } = useAppSelector((state: any) => state.courses);
+  const { messages: initialMessages } = useAppSelector((state: RootState) => state.sms); // Renamed to avoid confusion
+  const { categories = [], loading: categoryLoading } = useAppSelector((state: any) => state.categories);
   const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [toaster, setToaster] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Added: Local state for messages to manage frontend-only deletion
+  const [messages, setMessages] = useState(initialMessages);
+
+  // Pagination states for each tab
+  const [usersPage, setUsersPage] = useState(1);
+  const [rolesPage, setRolesPage] = useState(1);
+  const [categoriesPage, setCategoriesPage] = useState(1);
+  const [coursesPage, setCoursesPage] = useState(1);
+  const [messagesPage, setMessagesPage] = useState(1);
+
+  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState(false);
   const [isEditCourseCategoryModalOpen, setIsEditCourseCategoryModalOpen] = useState(false);
-  const [selectedCourse, setselectedCourse] = useState(null);
-  const [selectedCourseCategory, setselectedCourseCategory] = useState(null);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
   const [isAddCourseCategoryModalOpen, setIsAddCourseCategoryModalOpen] = useState(false);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedCourse, setSelectedCourse] = useState<any>(null);
+  const [selectedCourseCategory, setSelectedCourseCategory] = useState<any>(null);
+  const [selectedRole, setSelectedRole] = useState<any>(null);
+  const [selectedUser, setSelectedUser] = useState<any>(null);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
-  console.log("cousre categories", categories);
+  // Profile form data
+  const [formData, setFormData] = useState({
+    firstName: "", lastName: "", email: "", phoneNumber: "", gender: "", birthDate: "", country: "", city: "", address: "",
+  });
 
+  // Fetch data on mount
   useEffect(() => {
     dispatch(getRoles());
     dispatch(getUsers());
+    dispatch(getMessages());
     dispatch(fetchCourseCategories());
     dispatch(fetchCourses());
+    dispatch(getProfile());
   }, [dispatch]);
 
-  const handleDelete = (id: string) => {
-    dispatch(deleteRole(id));
+  // Added: Sync local messages state with Redux state when it changes
+  useEffect(() => {
+    setMessages(initialMessages);
+  }, [initialMessages]);
+
+  // Sync form data with currentUser
+  useEffect(() => {
+    if (currentUser) {
+      setFormData({
+        firstName: currentUser.firstName || "",
+        lastName: currentUser.lastName || "",
+        email: currentUser.email || "",
+        phoneNumber: currentUser.phoneNumber || "",
+        gender: currentUser.gender || "",
+        birthDate: currentUser.birthDate ? currentUser.birthDate.split("T")[0] : "",
+        country: currentUser.country || "Rwanda",
+        city: currentUser.city || "Kigali",
+        address: currentUser.address || "Rwanda",
+      });
+    }
+  }, [currentUser]);
+
+  // Form handlers
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleDeleteCourse = (id:string) => {
-    dispatch(deleteCourse(id));
+  const showToaster = (message: string, type: "success" | "error") => {
+    setToaster({ message, type });
+    setTimeout(() => setToaster(null), 3000);
   };
 
-  const handleDeleteCourseCategory = (id: string) => {
-    dispatch(deleteCourseCategory(id));
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) setSelectedImage(e.target.files[0]);
   };
 
-  const [activeTab, setActiveTab] = useState("overview");
-  const [SidebarOpen, setSidebarOpen] = useState(false);
+  const handleEditProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formDataToSend = new FormData();
+    Object.entries(formData).forEach(([key, value]) => formDataToSend.append(key, value));
+    if (selectedImage) formDataToSend.append("profile", selectedImage);
 
-  const programs = [
-    { id: 1, name: "STEM Program", description: "Science, Technology, Engineering, and Math.", status: "Ongoing" },
-    { id: 2, name: "Arts Program", description: "Creative Arts and Literature.", status: "Completed" },
-  ];
+    try {
+      const response = await dispatch(editProfile(formDataToSend));
+      showToaster(response.meta.requestStatus === "fulfilled" ? "Profile updated successfully!" : "Failed to update profile.", response.meta.requestStatus === "fulfilled" ? "success" : "error");
+    } catch (error) {
+      showToaster("An error occurred while updating the profile.", "error");
+    }
+  };
+
+  // Delete handlers
+  const handleDelete = (id: string) => dispatch(deleteRole(id));
+  const handleDeleteCourse = (id: string) => dispatch(deleteCourse(id));
+  const handleDeleteCourseCategory = (id: string) => dispatch(deleteCourseCategory(id));
+  
+  // Added: Frontend-only delete for messages
+  const handleDeleteMessage = (id: string) => {
+    setMessages((prevMessages: any[]) => prevMessages.filter((message) => message.id !== id));
+    showToaster("Message deleted successfully!", "success");
+  };
+
+  // Sorting and Pagination Logic
+  const sortByCreatedAt = (items: any[]) => items.slice().sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  const paginateItems = (items: any[], page: number) => {
+    const indexOfLast = page * ITEMS_PER_PAGE;
+    const indexOfFirst = indexOfLast - ITEMS_PER_PAGE;
+    return items.slice(indexOfFirst, indexOfLast);
+  };
+
+  // Sorted and filtered data
+  const sortedUsers = sortByCreatedAt(users.filter((user: any) => user.email.toLowerCase().includes(searchTerm.toLowerCase())));
+  const sortedRoles = sortByCreatedAt(roles);
+  const sortedCategories = sortByCreatedAt(categories);
+  const sortedCourses = sortByCreatedAt(courses);
+  const sortedMessages = sortByCreatedAt(messages); // Uses local state
+
+  // Paginated data
+  const currentUsers = paginateItems(sortedUsers, usersPage);
+  const currentRoles = paginateItems(sortedRoles, rolesPage);
+  const currentCategories = paginateItems(sortedCategories, categoriesPage);
+  const currentCourses = paginateItems(sortedCourses, coursesPage);
+  const currentMessages = paginateItems(sortedMessages, messagesPage);
+
+  // Total pages
+  const totalUsersPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
+  const totalRolesPages = Math.ceil(sortedRoles.length / ITEMS_PER_PAGE);
+  const totalCategoriesPages = Math.ceil(sortedCategories.length / ITEMS_PER_PAGE);
+  const totalCoursesPages = Math.ceil(sortedCourses.length / ITEMS_PER_PAGE);
+  const totalMessagesPages = Math.ceil(sortedMessages.length / ITEMS_PER_PAGE);
+
+  // Pagination Component
+  const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (page: number) => void }) => (
+    <div className="mt-6 flex justify-center gap-2">
+      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+        <button
+          key={page}
+          onClick={() => onPageChange(page)}
+          className={`px-3 py-1 rounded-full transition ${currentPage === page ? "bg-light-primary text-white" : "bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text hover:bg-light-accent dark:hover:bg-dark-accent"}`}
+        >
+          {page}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="flex min-h-screen bg-light-background dark:bg-dark-background">
+    <div className="w-full min-h-screen flex bg-light-background dark:bg-dark-background font-sans text-light-text dark:text-dark-text">
       {/* Mobile Sidebar */}
-      <button
-        className="p-3 md:hidden fixed top-4 left-4 bg-light-gray dark:bg-dark-gray rounded-full"
-        onClick={() => setSidebarOpen(true)}
-      >
-        <Menu className="w-6 h-6 dark:text-dark-text" />
+      <button className="p-3 md:hidden fixed top-4 left-4 bg-light-gray dark:bg-dark-gray rounded-full z-50" onClick={() => setSidebarOpen(true)}>
+        <Menu className="w-6 h-6 text-light-text dark:text-dark-text" />
       </button>
 
       {/* Sidebar Navigation */}
-      <aside 
-        className={`fixed inset-y-0 left-0 w-64 bg-light-gray dark:bg-dark-gray p-6 transition-transform transform md:relative md:translate-x-0 ${SidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
-      >
-        <button
-          className="p-2 absolute top-4 right-4 md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        >
-          <X className="w-6 h-6 dark:text-dark-text" />
+      {/* Updated: Added whitespace-nowrap to "Course Categories" to keep it on one line */}
+      <aside className={`fixed inset-y-0 left-0 w-64 bg-light-gray dark:bg-dark-gray p-6 transition-transform transform md:relative md:translate-x-0 ${sidebarOpen ? "translate-x-0 z-50" : "-translate-x-full"}`}>
+        <button className="p-2 absolute top-4 right-4 md:hidden" onClick={() => setSidebarOpen(false)}>
+          <X className="w-6 h-6 text-light-text dark:text-dark-text" />
         </button>
-
-        <h2 className="text-md font-bold text-light-primary mb-6">Admin Dashboard</h2>
-        <ul className="space-y-4">
+        <h2 className="text-2xl font-bold text-light-primary dark:text-dark-primary mb-6">Admin Dashboard</h2>
+        <ul className="space-y-3">
           <li>
-            <button
-              onClick={() => setActiveTab("overview")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "overview" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <User /> Overview
+            <button onClick={() => setActiveTab("profile")} className="flex items-center gap-3 p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">
+              <img src={currentUser?.profile || "/square.jpg"} alt="Profile" className="w-10 h-10 rounded-full" />
+              <span className="text-lg font-semibold">{currentUser?.lastName || "User"}</span>
             </button>
           </li>
-          <li>
-            <button
-              onClick={() => setActiveTab("users")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "users" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Users /> Users
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => setActiveTab("roles")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "roles" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Key /> Roles
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => setActiveTab("courses")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <BookOpen /> Courses
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => setActiveTab("courseCategories")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "courses" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <BookOpen /> CourseCategories
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => setActiveTab("programs")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "programs" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Award /> Programs
-            </button>
-          </li>
-          <li>
-            <button
-              onClick={() => setActiveTab("settings")}
-              className={`flex items-center gap-2 p-3 w-full rounded-lg transition dark:text-dark-text ${activeTab === "settings" ? "bg-light-primary text-white" : "hover:bg-light-secondary"}`}
-            >
-              <Settings /> Settings
-            </button>
-          </li>
+          {[
+            { tab: "overview", icon: <User />, label: "Overview" },
+            { tab: "users", icon: <Users />, label: "Users" },
+            { tab: "roles", icon: <Key />, label: "Roles" },
+            { tab: "courseCategories", icon: <BookIcon />, label: "Course Categories" }, // Will stay on one line
+            { tab: "courses", icon: <BookOpen />, label: "Courses" },
+            { tab: "sms", icon: <MessageCircle />, label: "Messages" },
+            { tab: "settings", icon: <Settings />, label: "Settings" },
+          ].map(({ tab, icon, label }) => (
+            <li key={tab}>
+              <button
+                onClick={() => setActiveTab(tab)}
+                className={`flex items-center gap-3 p-3 w-full rounded-lg transition whitespace-nowrap ${activeTab === tab ? "bg-light-primary dark:bg-dark-primary text-white" : "hover:bg-light-accent dark:hover:bg-dark-accent"}`}
+              >
+                {icon} {label}
+              </button>
+            </li>
+          ))}
         </ul>
-        <div className="mt-6 dark:text-dark-text">
+        <div className="mt-6">
           <ThemeToggle />
         </div>
-        <div>
-          <LogoutButton />
-        </div>
-        <div className="p-2 mt-4">
-          <Link to="/" className="text-md font-bold text-light-primary mt-6 dark:text-dark-text dark:hover:text-light-secondary">Exit Dashboard</Link>
+        <div className="mt-4"><LogoutButton /></div>
+        <div className="p-2 mb-4">
+          <Link to="/" className="text-md font-bold text-light-primary hover:text-light-accent dark:text-dark-primary dark:hover:text-dark-accent">Exit Dashboard</Link>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 p-6">
+      <main className="flex-1 p-6 w-full">
+        {toaster && <Toaster message={toaster.message} type={toaster.type} />}
+
+        {/* Profile Tab */}
+        {activeTab === "profile" && (
+          <section className="w-full max-w-4xl mx-auto mt-12 p-6 bg-light-gray dark:bg-dark-gray rounded-lg shadow-lg dark:text-dark-text">
+            <h1 className="text-3xl font-bold mb-6 text-center text-light-primary">Your Profile</h1>
+            {loading ? (
+              <Loader />
+            ) : currentUser ? (
+              <div className="space-y-6">
+                <div className="flex flex-col items-center">
+                  <div className="relative">
+                    <img
+                      src={currentUser.profile || "/square.jpg"}
+                      alt="Profile"
+                      className="w-32 h-32 rounded-full border-4 border-light-primary object-cover"
+                    />
+                    <label htmlFor="imageUpload" className="absolute bottom-0 right-0 bg-light-primary p-2 rounded-full cursor-pointer">
+                      <Edit2Icon className="w-5 h-5 text-white" />
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                      id="imageUpload"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-semibold mt-4">{currentUser.firstName} {currentUser.lastName}</h2>
+                  <p className="text-gray-600 dark:text-gray-300">{currentUser.email}</p>
+                </div>
+                <form onSubmit={handleEditProfile} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-sm font-medium mb-1">First Name</label>
+                    <input
+                      type="text"
+                      name="firstName"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Last Name</label>
+                    <input
+                      type="text"
+                      name="lastName"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <input
+                      type="email"
+                      name="email"
+                      className="w-full p-3 rounded bg-gray-200 dark:bg-gray-700 text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600 cursor-not-allowed"
+                      value={formData.email}
+                      readOnly
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <input
+                      type="text"
+                      name="phoneNumber"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.phoneNumber}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Gender</label>
+                    <input
+                      type="text"
+                      name="gender"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.gender}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Birth Date</label>
+                    <input
+                      type="date"
+                      name="birthDate"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.birthDate}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">Country</label>
+                    <input
+                      type="text"
+                      name="country"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.country}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-1">City</label>
+                    <input
+                      type="text"
+                      name="city"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.city}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="block text-sm font-medium mb-1">Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      className="w-full p-3 rounded bg-white dark:bg-dark-background text-light-text dark:text-dark-text border border-gray-300 dark:border-gray-600"
+                      value={formData.address}
+                      onChange={handleChange}
+                    />
+                  </div>
+                  <div className="md:col-span-2 flex justify-center">
+                    <button
+                      type="submit"
+                      className="px-6 py-3 bg-light-primary text-white rounded-lg hover:bg-orange-600 transition"
+                    >
+                      Save Profile
+                    </button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <p className="text-center text-gray-600 dark:text-gray-300">Unable to load profile data.</p>
+            )}
+          </section>
+        )}
+
         {/* Overview Tab */}
         {activeTab === "overview" && (
-          <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold m-5 text-center">Admin Dashboard Overview</h1>
-            <div className="m-4 flex flex-wrap justify-around items-center gap-4">
+          <section className="min-h-screen">
+            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">Dashboard Overview</h1>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
               <Card title="Users" value={users.length} icon={<Users />} />
               <Card title="Courses" value={courses.length} icon={<BookOpen />} />
-              <Card title="Programs" value={programs.length} icon={<Award />} />
+              <Card title="Messages" value={messages ? messages.length : 0} icon={<MessageCircle />} />
             </div>
-            <div className="mt-10 text-center">
-              <UserExpansionTrend />
-            </div>
+            <div className="bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg"><UserExpansionTrend /></div>
           </section>
         )}
 
         {/* Users Tab */}
         {activeTab === "users" && (
-          <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Manage Users</h1>
-            {loading ? (
-              <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-            ) : error ? (
-              <p className="text-red-600 dark:text-red-700">{error}</p>
-            ) : (
-              <table className="w-full table-auto border-collapse text-sm">
-              <thead>
-                <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Email</th>
-                  <th className="p-3">First Name</th>
-                  <th className="p-3">Last Name</th>
-                  <th className="p-3">Role</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {users.map((item: any) => (
-                  <tr key={item.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{item.id}</td>
-                    <td className="p-3">{item.email}</td>
-                    <td className="p-3">{item.firstName}</td>
-                    <td className="p-3">{item.lastName}</td>
-                    <td className="p-3">{item.role}</td>
-                    <td className="p-3">{item.status? "Active" : "Inactive"}</td>
-                    <td className="p-3 flex gap-2">
-                      <button 
-                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
-                        onClick={() => {
-                          setSelectedUser(item);
-                          setIsModalOpen(true);
-                        }}
-                        >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition">
-                        <Trash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            )}
-
-            {/* Assign Role Modal */}
-            {isModalOpen && selectedUser && (
-              <AssignRoleModal
-                isOpen={isModalOpen}
-                onClose={() => setIsModalOpen(false)}
-                user={selectedUser}
+          <section>
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Manage Users</h1>
+              <input
+                type="text"
+                className="w-full sm:w-64 p-3 rounded-lg bg-white dark:bg-black border border-light-primary dark:border-dark-primary focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+                placeholder="Search by email"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
               />
+            </div>
+            {loading ? <Loader /> : error ? (
+              <p className="text-red-600 dark:text-red-400 text-center">{error}</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentUsers.map((user: any) => (
+                    <div key={user.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition">
+                      <h3 className="text-lg font-semibold truncate">{user.email}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{user.firstName} {user.lastName}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Role: {user.role || "N/A"}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Status: {user.status ? "Active" : "Inactive"}</p>
+                      <button
+                        className="mt-3 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition w-full flex items-center justify-center gap-2"
+                        onClick={() => { setSelectedUser(user); setIsModalOpen(true); }}
+                      >
+                        <Edit size={16} /> Assign Role
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <Pagination currentPage={usersPage} totalPages={totalUsersPages} onPageChange={setUsersPage} />
+              </>
             )}
-
+            {isModalOpen && selectedUser && <AssignRoleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} />}
           </section>
         )}
 
         {/* Roles Tab */}
         {activeTab === "roles" && (
-          <section className="text-justify dark:text-dark-text">
-            <div className="flex justify-between items-center">
-                <h1 className="text-2xl font-bold mb-4 text-center">Manage Roles</h1>
-                <button 
-                  onClick={() => setIsModalOpen(true)}
-                  className="bg-dark-secondary text-white p-2 rounded-md hover:bg-pink-400 transition">Add Role</button>
+          <section className="min-h-screen">
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Manage Roles</h1>
+              <button onClick={() => setIsModalOpen(true)} className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">+ Add Role</button>
             </div>
-
-            {roleLoading ? (
-              <p className="text-gray-600 dark:text-gray-300">Loading...</p>
-            ) : roleError ? (
-              <p className="text-red-600 dark:text-red-700">{roleError}</p>
-            ): (
-              <table className="w-full table-auto border-collapse text-sm">
-              <thead>
-                <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Role Name</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {roles.map((role: any) => (
-                  <tr key={role.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{role.id}</td>
-                    <td className="p-3">{role.name}</td>
-                    <td className="p-3 flex gap-2">
-                      <button 
-                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
-                        onClick={() => {
-                          setSelectedRole(role); 
-                          setIsEditModalOpen(true);
-                        }}
+            {roleLoading ? <Loader /> : roleError ? (
+              <p className="text-red-600 dark:text-red-400 text-center">{roleError}</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentRoles.map((role: any) => (
+                    <div key={role.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition">
+                      <h3 className="text-lg font-semibold">{role.name}</h3>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">ID: {role.id}</p>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          className="flex-1 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition flex items-center justify-center gap-2"
+                          onClick={() => { setSelectedRole(role); setIsEditModalOpen(true); }}
                         >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition"
-                        onClick={() => handleDelete(role.id)}
+                          <Edit size={16} /> Edit
+                        </button>
+                        <button
+                          className="flex-1 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
+                          onClick={() => handleDelete(role.id)}
                         >
-                        <Trash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                          <Trash size={16} /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Pagination currentPage={rolesPage} totalPages={totalRolesPages} onPageChange={setRolesPage} />
+              </>
             )}
-
-            {/* Add Role Modal */}
             <AddRoleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-
-            {/* Edit Role Modal */}
-            
             {isEditModalOpen && <EditRoleModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} role={selectedRole} />}
           </section>
         )}
 
         {/* Courses Tab */}
         {activeTab === "courses" && (
-          <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Manage Courses</h1>
-            <button
-              onClick={() => setIsAddCourseModalOpen(true)}
-              className="bg-dark-secondary text-white p-2 mb-2 rounded-md hover:bg-green-600 transition"
-            >
-              + Add
-            </button>
-            <table className="w-full table-auto border-collapse text-sm">
-              <thead>
-                <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Title</th>
-                  <th className="p-3">description</th>
-                  <th className="p-3">Content</th>
-                  <th className="p-3">Category</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {courses.map((course: any) => (
-                  <tr key={course.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{course.id}</td>
-                    <td className="p-3">{course.title}</td>
-                    <td className="p-3">{course.description}</td>
-                    <td className="p-3">{course.content}</td>
-                    <td className="p-3">{course.categoryId}</td>
-                    <td className="p-3 flex gap-2">
-                    <button 
-                        className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
-                        onClick={() => {
-                          setselectedCourse(course); 
-                          setIsEditCourseModalOpen(true);
-                        }}
-                        >
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button 
-                        className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition"
-                        onClick={() => handleDeleteCourse(course.id)}
-                      >
-                        <Trash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-
-            <AddCourseModal isOpen={isAddCourseModalOpen} onClose={() => setIsAddCourseModalOpen(false)} />
-            {isEditCourseModalOpen && (
-            <EditCourseModal
-              isOpen={isEditCourseModalOpen}
-              onClose={() => setIsEditCourseModalOpen(false)}
-              course={selectedCourse} 
-            />
+          <section>
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Manage Courses</h1>
+              <button onClick={() => setIsAddCourseModalOpen(true)} className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">+ Add Course</button>
+            </div>
+            {courses.length === 0 ? (
+              <p className="text-center text-gray-600 dark:text-gray-300">No courses available.</p>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentCourses.map((course: any) => (
+                    <div key={course.id} className="bg-light-gray dark:bg-dark-gray rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
+                      <img src={course.image || careerDevImg} alt={course.title} className="w-full h-40 object-cover" />
+                      <div className="p-4">
+                        <h3 className="text-lg font-semibold truncate">{course.title}</h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">category: {course.categoryId}</p>
+                        <div className="mt-4 flex gap-2">
+                          <button
+                            className="flex-1 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition flex items-center justify-center gap-2"
+                            onClick={() => { setSelectedCourse(course); setIsEditCourseModalOpen(true); }}
+                          >
+                            <Edit size={16} /> Edit
+                          </button>
+                          <button
+                            className="flex-1 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
+                            onClick={() => handleDeleteCourse(course.id)}
+                          >
+                            <Trash size={16} /> Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Pagination currentPage={coursesPage} totalPages={totalCoursesPages} onPageChange={setCoursesPage} />
+              </>
             )}
-
-            {/* {isEditCourseModalOpen && <EditCourseModal isOpen={isEditCourseModalOpen} onClose={() => setIsEditCourseModalOpen(false)} course={selectedCourse} />} */}
-
+            <AddCourseModal isOpen={isAddCourseModalOpen} onClose={() => setIsAddCourseModalOpen(false)} />
+            {isEditCourseModalOpen && <EditCourseModal isOpen={isEditCourseModalOpen} onClose={() => setIsEditCourseModalOpen(false)} course={selectedCourse} />}
           </section>
         )}
 
-        {/* CourseCategories Tab */}
+        {/* Course Categories Tab */}
         {activeTab === "courseCategories" && (
-          <section className="text-justify dark:text-dark-text">
-            <div className="flex justify-between">
-              <h1 className="text-2xl font-bold mb-4 text-center">Course Categories</h1>
-              <button
-                onClick={() => setIsAddCourseCategoryModalOpen(true)}
-                className="bg-dark-secondary text-white p-2 mb-2 rounded-md hover:bg-green-600 transition"
-              >
-                + Add
-              </button>
+          <section>
+            <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Course Categories</h1>
+              <button onClick={() => setIsAddCourseCategoryModalOpen(true)} className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">+ Add Category</button>
             </div>
-
-            {/* Loading Spinner */}
-            {categoryLoading ? (
-              <div className="flex justify-center items-center py-6">
-                <div className="animate-spin border-t-4 border-green-500 border-solid w-12 h-12 rounded-full"></div>
-              </div>
-            ) : (
-              <table className="w-full table-auto border-collapse text-sm">
-                <thead>
-                  <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
-                    <th className="p-3">ID</th>
-                    <th className="p-3">Name</th>
-                    <th className="p-3">Description</th>
-                    <th className="p-3">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {categories.map((category: any) => (
-                    <tr key={category.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                      <td className="p-3">{category.id}</td>
-                      <td className="p-3">{category.name}</td>
-                      <td className="p-3">{category.description}</td>
-                      <td className="p-3 flex gap-2">
-                        <button 
-                          className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition"
-                          onClick={() => {
-                            setselectedCourseCategory(category.id); 
-                            setIsEditCourseCategoryModalOpen(true);
-                          }}
+            {categoryLoading ? <Loader /> : (
+              <>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {currentCategories.map((category: any) => (
+                    <div key={category.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition">
+                      <h3 className="text-lg font-semibold">{category.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{category.description}</p>
+                      <div className="mt-3 flex gap-2">
+                        <button
+                          className="flex-1 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition flex items-center justify-center gap-2"
+                          onClick={() => { setSelectedCourseCategory(category.id); setIsEditCourseCategoryModalOpen(true); }}
                         >
-                          <Edit className="w-4 h-4" />
+                          <Edit size={16} /> Edit
                         </button>
-                        <button 
-                          className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition"
+                        <button
+                          className="flex-1 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
                           onClick={() => handleDeleteCourseCategory(category.id)}
                         >
-                          <Trash className="w-4 h-4" />
+                          <Trash size={16} /> Delete
                         </button>
-                      </td>
-                    </tr>
+                      </div>
+                    </div>
                   ))}
-                </tbody>
-              </table>
+                </div>
+                <Pagination currentPage={categoriesPage} totalPages={totalCategoriesPages} onPageChange={setCategoriesPage} />
+              </>
             )}
-
-            {/* Modals */}
-            {isAddCourseCategoryModalOpen && (
-            <AddCategoryModel
-              isOpen={isAddCourseCategoryModalOpen}
-              onClose={() => setIsAddCourseCategoryModalOpen(false)}
-            />
-          )}
-
-          {isEditCourseCategoryModalOpen && (
-            <EditCatModel
-              isOpen={isEditCourseCategoryModalOpen}
-              onClose={() => setIsEditCourseCategoryModalOpen(false)}
-              categoryId={selectedCourseCategory}
-            />
-          )}
-            
+            {isAddCourseCategoryModalOpen && <AddCategoryModel isOpen={isAddCourseCategoryModalOpen} onClose={() => setIsAddCourseCategoryModalOpen(false)} />}
+            {isEditCourseCategoryModalOpen && <EditCatModel isOpen={isEditCourseCategoryModalOpen} onClose={() => setIsEditCourseCategoryModalOpen(false)} categoryId={selectedCourseCategory} />}
           </section>
         )}
 
-        {/* Programs Tab */}
-        {activeTab === "programs" && (
-          <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Manage Programs</h1>
-            <table className="w-full table-auto border-collapse text-sm">
-              <thead>
-                <tr className="text-left bg-light-primary dark:bg-dark-primary text-white">
-                  <th className="p-3">ID</th>
-                  <th className="p-3">Program Name</th>
-                  <th className="p-3">Description</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {programs.map(program => (
-                  <tr key={program.id} className="border-b hover:bg-light-gray dark:hover:bg-dark-gray">
-                    <td className="p-3">{program.id}</td>
-                    <td className="p-3">{program.name}</td>
-                    <td className="p-3">{program.description}</td>
-                    <td className="p-3">{program.status}</td>
-                    <td className="p-3 flex gap-2">
-                      <button className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 transition">
-                        <Edit className="w-4 h-4" />
-                      </button>
-                      <button className="bg-red-500 text-white p-2 rounded-md hover:bg-red-600 transition">
-                        <Trash className="w-4 h-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        {/* Messages Tab */}
+        {/* Updated: Removed Edit button, implemented frontend-only delete */}
+        {activeTab === "sms" && (
+          <section>
+            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">Messages</h1>
+            {messages.length === 0 ? (
+              <p className="text-center text-gray-600 dark:text-gray-300">No messages available.</p>
+            ) : (
+              <>
+                <div className="space-y-6">
+                  {currentMessages.map((message: any) => (
+                    <div key={message.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex-1">
+                        <p className="text-sm text-gray-500 dark:text-gray-400">ID: {message.id}</p>
+                        <p className="text-lg font-semibold">{message.email}</p>
+                        <p className="text-gray-600 dark:text-gray-300 line-clamp-2">{message.message}</p>
+                      </div>
+                      <div className="flex gap-2 w-full sm:w-auto">
+                        <button
+                          className="flex-1 sm:flex-none bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
+                          onClick={() => handleDeleteMessage(message.id)}
+                        >
+                          <Trash size={16} /> Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <Pagination currentPage={messagesPage} totalPages={totalMessagesPages} onPageChange={setMessagesPage} />
+              </>
+            )}
           </section>
         )}
 
         {/* Settings Tab */}
         {activeTab === "settings" && (
-          <section className="text-justify dark:text-dark-text">
-            <h1 className="text-2xl font-bold mb-4 text-center">Admin Settings</h1>
-            <div className="space-y-4">
+          <section>
+            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">Admin Settings</h1>
+            <div className="max-w-md mx-auto bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg space-y-6">
               <div>
-                <label htmlFor="theme" className="block text-sm">Theme</label>
-                <select id="theme" className="w-full p-2 border rounded-md dark:bg-dark-background">
+                <label htmlFor="theme" className="block text-sm font-medium mb-2">Theme</label>
+                <select
+                  id="theme"
+                  className="w-full p-3 rounded-lg bg-white dark:bg-black border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+                >
                   <option value="light">Light Mode</option>
                   <option value="dark">Dark Mode</option>
                 </select>
               </div>
               <div>
-                <label htmlFor="user-settings" className="block text-sm">User Settings</label>
-                <select id="user-settings" className="w-full p-2 border rounded-md dark:bg-dark-background">
+                <label htmlFor="user-settings" className="block text-sm font-medium mb-2">User Settings</label>
+                <select
+                  id="user-settings"
+                  className="w-full p-3 rounded-lg bg-white dark:bg-black border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
+                >
                   <option value="change-password">Change Password</option>
                   <option value="reset-account">Reset Account</option>
                 </select>

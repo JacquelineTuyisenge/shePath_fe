@@ -11,7 +11,7 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
         id: "/",
-        name: 'Courses App',
+        name: 'She Path App',
         short_name: 'Courses',
         description: 'Learn anywhere, anytime with offline access!',
         theme_color: '#ffffff',

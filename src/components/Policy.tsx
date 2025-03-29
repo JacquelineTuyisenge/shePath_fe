@@ -1,15 +1,10 @@
 import React from 'react';
-import BackButton from '../buttons/Back';
-import { useLocation } from 'react-router-dom';
 
 const PrivacyPolicy: React.FC = () => {
-  const location = useLocation();
-
 
   return (
-    <div className="container mx-auto px-6 py-8">
-      {location.pathname === "/policy" && <BackButton />}
-      <h1 className="text-3xl font-semibold text-center text-light-primary dark:text-dark-primary mb-6">
+    <div className="container h-screen mt-10 mx-auto px-6 py-8">
+      <h1 className="text-3xl py-5 font-semibold text-center text-light-primary dark:text-dark-primary mb-6">
         Privacy Policy
       </h1>
       <div className="bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text p-6 rounded-lg shadow-lg">
