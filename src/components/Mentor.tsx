@@ -50,7 +50,7 @@ const MentorList = ({ onSelectMentor, selectedMentorId }: MentorListProps) => {
               <div
                 key={mentor.id}
                 data-mentor-id={mentor.id}
-                className={`flex items-center p-4 rounded-lg shadow-md cursor-pointer transition transform hover:-translate-y-1 ${
+                className={`flex flex-col sm:flex-row items-center p-4 rounded-lg shadow-md cursor-pointer transition transform hover:-translate-y-1 ${
                   isSelected
                     ? "bg-light-primary text-white"
                     : "bg-light-gray dark:bg-dark-gray hover:bg-light-secondary dark:hover:bg-gray-700"
@@ -62,12 +62,17 @@ const MentorList = ({ onSelectMentor, selectedMentorId }: MentorListProps) => {
                   alt={`${mentor.firstName} ${mentor.lastName}`}
                   className="w-12 h-12 rounded-full object-cover border-2 border-light-primary mr-4"
                 />
+
                 <div className="flex-1">
-                  <p className="text-lg font-semibold">{mentor.firstName} {mentor.lastName}</p>
+                  <p className="text-lg mb-2 font-semibold">{mentor.firstName} {mentor.lastName}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{mentor.address || 'USA'}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{mentor.email || 'USA'}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{mentor.phoneNumber}</p>
                   <p className="text-sm text-gray-600 dark:text-gray-300">
                     {chatExists ? "Ongoing Chat" : "Available"}
                   </p>
                 </div>
+
                 <button
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition ${
                     isSelected
@@ -77,6 +82,7 @@ const MentorList = ({ onSelectMentor, selectedMentorId }: MentorListProps) => {
                 >
                   {chatExists ? "Open Chat" : "Start Chat"}
                 </button>
+
               </div>
             );
           })}

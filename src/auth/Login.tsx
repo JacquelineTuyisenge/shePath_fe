@@ -189,8 +189,13 @@ function Login() {
                     {isLogin ? t('register') : t('login')}
                 </button>
             </p>
-
-            {toaster && <Toaster message={toaster.message} type={toaster.type} />}
+            {toaster && (
+                <Toaster
+                    message={toaster.message}
+                    type={toaster.type}
+                    onClose={() => setToaster(null)} // Reset toaster state
+                />
+            )}
         </div>
     );
 }

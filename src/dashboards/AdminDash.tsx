@@ -1,77 +1,105 @@
-// AdminDashboard.tsx
 import { useEffect, useState } from "react";
 import Card from "../components/Card";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
-import { User, BookOpen, MessageCircle, Settings, Users, Menu, X, Edit, Trash, Key, BookIcon, Edit2Icon } from "lucide-react";
-import ThemeToggle from "../components/Theme"; // Using your existing ThemeToggle
+import {
+  User,
+  BookOpen,
+  MessageCircle,
+  Settings,
+  Users,
+  Menu,
+  X,
+  Edit,
+  Trash,
+  Key,
+  BookIcon,
+  Edit2Icon,
+} from "lucide-react";
+import ThemeToggle from "../components/Theme";
 import { AppDispatch, RootState } from "../store";
 import AddRoleModal from "../modals/AddRole";
 import AddCourseModal from "../modals/AddCourse";
 import AddCategoryModel from "../modals/AddCategory";
 import EditCourseModal from "../modals/EditCourseModal";
 import EditCatModel from "../modals/EditCategory";
-import { getUsers } from "../features/userSlice";
-import { getMessages } from "../features/messageSlice";
-import { deleteCourse, fetchCourses } from "../features/courseSlice";
-import { deleteCourseCategory, fetchCourseCategories } from "../features/courceCategorySlice";
-import { getRoles, deleteRole } from "../features/roleSlice";
 import EditRoleModal from "../modals/EditRoleModal";
 import AssignRoleModal from "../modals/AssignRole";
 import LogoutButton from "../auth/Logout";
 import UserExpansionTrend from "../features/UserChart";
-import { getProfile, editProfile } from "../features/userSlice";
+import { getUsers, getProfile, editProfile } from "../features/userSlice";
+import { getMessages } from "../features/messageSlice";
+import { deleteCourse, fetchCourses } from "../features/courseSlice";
+import {
+  deleteCourseCategory,
+  fetchCourseCategories,
+} from "../features/courceCategorySlice";
+import { getRoles, deleteRole } from "../features/roleSlice";
 import { Link } from "react-router-dom";
 import Toaster from "../components/Toaster";
 import Loader from "../components/Loader";
 import careerDevImg from "../assets/career.jpg";
 
-const ITEMS_PER_PAGE = 6; // Consistent items per page for all sections
+const ITEMS_PER_PAGE = 6;
 
 const AdminDashboard = () => {
   const useAppDispatch = () => useDispatch<AppDispatch>();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
 
   const dispatch = useAppDispatch();
-  const [searchTerm, setSearchTerm] = useState(""); // For user search
-  const { users, loading, error } = useAppSelector((state: any) => state.users);
-  const { currentUser } = useSelector((state: RootState) => state.users);
-  const { courses } = useAppSelector((state: any) => state.courses);
-  const { messages: initialMessages } = useAppSelector((state: RootState) => state.sms); // Renamed to avoid confusion
-  const { categories = [], loading: categoryLoading } = useAppSelector((state: any) => state.categories);
-  const { roles, loading: roleLoading, error: roleError } = useAppSelector((state: any) => state.roles);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { users, loading, error } = useAppSelector((state) => state.users);
+  const { currentUser } = useAppSelector((state) => state.users);
+  const { courses } = useAppSelector((state) => state.courses);
+  const { messages: initialMessages } = useAppSelector((state) => state.sms);
+  const { categories = [], loading: categoryLoading } = useAppSelector(
+    (state) => state.categories
+  );
+  const {
+    roles,
+    loading: roleLoading,
+    error: roleError,
+  } = useAppSelector((state) => state.roles);
   const [activeTab, setActiveTab] = useState("overview");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [toaster, setToaster] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [toaster, setToaster] = useState<{
+    message: string;
+    type: "success" | "error";
+  } | null>(null);
 
-  // Added: Local state for messages to manage frontend-only deletion
   const [messages, setMessages] = useState(initialMessages);
-
-  // Pagination states for each tab
   const [usersPage, setUsersPage] = useState(1);
   const [rolesPage, setRolesPage] = useState(1);
   const [categoriesPage, setCategoriesPage] = useState(1);
   const [coursesPage, setCoursesPage] = useState(1);
   const [messagesPage, setMessagesPage] = useState(1);
 
-  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isEditCourseModalOpen, setIsEditCourseModalOpen] = useState(false);
-  const [isEditCourseCategoryModalOpen, setIsEditCourseCategoryModalOpen] = useState(false);
+  const [isEditCourseCategoryModalOpen, setIsEditCourseCategoryModalOpen] =
+    useState(false);
   const [isAddCourseModalOpen, setIsAddCourseModalOpen] = useState(false);
-  const [isAddCourseCategoryModalOpen, setIsAddCourseCategoryModalOpen] = useState(false);
+  const [isAddCourseCategoryModalOpen, setIsAddCourseCategoryModalOpen] =
+    useState(false);
   const [selectedCourse, setSelectedCourse] = useState<any>(null);
-  const [selectedCourseCategory, setSelectedCourseCategory] = useState<any>(null);
+  const [selectedCourseCategory, setSelectedCourseCategory] =
+    useState<any>(null);
   const [selectedRole, setSelectedRole] = useState<any>(null);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
-  // Profile form data
   const [formData, setFormData] = useState({
-    firstName: "", lastName: "", email: "", phoneNumber: "", gender: "", birthDate: "", country: "", city: "", address: "",
+    firstName: "",
+    lastName: "",
+    email: "",
+    phoneNumber: "",
+    gender: "",
+    birthDate: "",
+    country: "",
+    city: "",
+    address: "",
   });
 
-  // Fetch data on mount
   useEffect(() => {
     dispatch(getRoles());
     dispatch(getUsers());
@@ -81,12 +109,10 @@ const AdminDashboard = () => {
     dispatch(getProfile());
   }, [dispatch]);
 
-  // Added: Sync local messages state with Redux state when it changes
   useEffect(() => {
     setMessages(initialMessages);
   }, [initialMessages]);
 
-  // Sync form data with currentUser
   useEffect(() => {
     if (currentUser) {
       setFormData({
@@ -95,7 +121,9 @@ const AdminDashboard = () => {
         email: currentUser.email || "",
         phoneNumber: currentUser.phoneNumber || "",
         gender: currentUser.gender || "",
-        birthDate: currentUser.birthDate ? currentUser.birthDate.split("T")[0] : "",
+        birthDate: currentUser.birthDate
+          ? currentUser.birthDate.split("T")[0]
+          : "",
         country: currentUser.country || "Rwanda",
         city: currentUser.city || "Kigali",
         address: currentUser.address || "Rwanda",
@@ -103,7 +131,6 @@ const AdminDashboard = () => {
     }
   }, [currentUser]);
 
-  // Form handlers
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
@@ -115,71 +142,106 @@ const AdminDashboard = () => {
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) setSelectedImage(e.target.files[0]);
+    if (e.target.files && e.target.files[0])
+      setSelectedImage(e.target.files[0]);
   };
 
   const handleEditProfile = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formDataToSend = new FormData();
-    Object.entries(formData).forEach(([key, value]) => formDataToSend.append(key, value));
+    Object.entries(formData).forEach(([key, value]) =>
+      formDataToSend.append(key, value)
+    );
     if (selectedImage) formDataToSend.append("profile", selectedImage);
 
     try {
       const response = await dispatch(editProfile(formDataToSend));
-      showToaster(response.meta.requestStatus === "fulfilled" ? "Profile updated successfully!" : "Failed to update profile.", response.meta.requestStatus === "fulfilled" ? "success" : "error");
+      showToaster(
+        response.meta.requestStatus === "fulfilled"
+          ? "Profile updated successfully!"
+          : "Failed to update profile.",
+        response.meta.requestStatus === "fulfilled" ? "success" : "error"
+      );
     } catch (error) {
       showToaster("An error occurred while updating the profile.", "error");
     }
   };
 
-  // Delete handlers
   const handleDelete = (id: string) => dispatch(deleteRole(id));
   const handleDeleteCourse = (id: string) => dispatch(deleteCourse(id));
-  const handleDeleteCourseCategory = (id: string) => dispatch(deleteCourseCategory(id));
-  
-  // Added: Frontend-only delete for messages
+  const handleDeleteCourseCategory = (id: string) =>
+    dispatch(deleteCourseCategory(id));
   const handleDeleteMessage = (id: string) => {
-    setMessages((prevMessages: any[]) => prevMessages.filter((message) => message.id !== id));
+    setMessages((prevMessages: any[]) =>
+      prevMessages.filter((message) => message.id !== id)
+    );
     showToaster("Message deleted successfully!", "success");
   };
 
-  // Sorting and Pagination Logic
-  const sortByCreatedAt = (items: any[]) => items.slice().sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+  const handleRoleUpdated = (updatedRole: { id: string; name: string }) => {
+    const updatedRoles = roles.map((r: any) =>
+      r.id === updatedRole.id ? { ...r, name: updatedRole.name } : r
+    );
+    dispatch({ type: "roles/setRoles", payload: updatedRoles });
+  };
+
+  const sortByCreatedAt = (items: any[]) =>
+    items
+      .slice()
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      );
   const paginateItems = (items: any[], page: number) => {
     const indexOfLast = page * ITEMS_PER_PAGE;
     const indexOfFirst = indexOfLast - ITEMS_PER_PAGE;
     return items.slice(indexOfFirst, indexOfLast);
   };
 
-  // Sorted and filtered data
-  const sortedUsers = sortByCreatedAt(users.filter((user: any) => user.email.toLowerCase().includes(searchTerm.toLowerCase())));
+  const sortedUsers = sortByCreatedAt(
+    users.filter((user: any) =>
+      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
   const sortedRoles = sortByCreatedAt(roles);
   const sortedCategories = sortByCreatedAt(categories);
   const sortedCourses = sortByCreatedAt(courses);
-  const sortedMessages = sortByCreatedAt(messages); // Uses local state
+  const sortedMessages = sortByCreatedAt(messages);
 
-  // Paginated data
   const currentUsers = paginateItems(sortedUsers, usersPage);
   const currentRoles = paginateItems(sortedRoles, rolesPage);
   const currentCategories = paginateItems(sortedCategories, categoriesPage);
   const currentCourses = paginateItems(sortedCourses, coursesPage);
   const currentMessages = paginateItems(sortedMessages, messagesPage);
 
-  // Total pages
   const totalUsersPages = Math.ceil(sortedUsers.length / ITEMS_PER_PAGE);
   const totalRolesPages = Math.ceil(sortedRoles.length / ITEMS_PER_PAGE);
-  const totalCategoriesPages = Math.ceil(sortedCategories.length / ITEMS_PER_PAGE);
+  const totalCategoriesPages = Math.ceil(
+    sortedCategories.length / ITEMS_PER_PAGE
+  );
   const totalCoursesPages = Math.ceil(sortedCourses.length / ITEMS_PER_PAGE);
   const totalMessagesPages = Math.ceil(sortedMessages.length / ITEMS_PER_PAGE);
 
-  // Pagination Component
-  const Pagination = ({ currentPage, totalPages, onPageChange }: { currentPage: number; totalPages: number; onPageChange: (page: number) => void }) => (
+  const Pagination = ({
+    currentPage,
+    totalPages,
+    onPageChange,
+  }: {
+    currentPage: number;
+    totalPages: number;
+    onPageChange: (page: number) => void;
+  }) => (
     <div className="mt-6 flex justify-center gap-2">
       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
         <button
           key={page}
           onClick={() => onPageChange(page)}
-          className={`px-3 py-1 rounded-full transition ${currentPage === page ? "bg-light-primary text-white" : "bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text hover:bg-light-accent dark:hover:bg-dark-accent"}`}
+          className={`px-3 py-1 rounded-full transition ${
+            currentPage === page
+              ? "bg-light-primary text-white"
+              : "bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text hover:bg-light-accent dark:hover:bg-dark-accent"
+          }`}
         >
           {page}
         </button>
@@ -189,30 +251,46 @@ const AdminDashboard = () => {
 
   return (
     <div className="w-full min-h-screen flex bg-light-background dark:bg-dark-background font-sans text-light-text dark:text-dark-text">
-      {/* Mobile Sidebar */}
-      <button className="p-3 md:hidden fixed top-4 left-4 bg-light-gray dark:bg-dark-gray rounded-full z-50" onClick={() => setSidebarOpen(true)}>
-        <Menu className="w-6 h-6 text-light-text dark:text-dark-text" />
-      </button>
-
-      {/* Sidebar Navigation */}
-      {/* Updated: Added whitespace-nowrap to "Course Categories" to keep it on one line */}
-      <aside className={`fixed inset-y-0 left-0 w-64 bg-light-gray dark:bg-dark-gray p-6 transition-transform transform md:relative md:translate-x-0 ${sidebarOpen ? "translate-x-0 z-50" : "-translate-x-full"}`}>
-        <button className="p-2 absolute top-4 right-4 md:hidden" onClick={() => setSidebarOpen(false)}>
+      {/* Sidebar */}
+      <aside
+        className={`fixed inset-y-0 left-0 w-64 bg-light-gray dark:bg-dark-gray p-6 transition-transform transform md:relative md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0 z-50" : "-translate-x-full"
+        }`}
+      >
+        <button
+          className="p-2 absolute top-4 right-4 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        >
           <X className="w-6 h-6 text-light-text dark:text-dark-text" />
         </button>
-        <h2 className="text-2xl font-bold text-light-primary dark:text-dark-primary mb-6">Admin Dashboard</h2>
+        <h2 className="text-2xl font-bold text-light-primary dark:text-dark-primary mb-6">
+          Admin Dashboard
+        </h2>
         <ul className="space-y-3">
           <li>
-            <button onClick={() => setActiveTab("profile")} className="flex items-center gap-3 p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">
-              <img src={currentUser?.profile || "/square.jpg"} alt="Profile" className="w-10 h-10 rounded-full" />
-              <span className="text-lg font-semibold">{currentUser?.lastName || "User"}</span>
+            <button
+              onClick={() => setActiveTab("profile")}
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition"
+            >
+              <img
+                src={currentUser?.profile || "/square.jpg"}
+                alt="Profile"
+                className="w-10 h-10 rounded-full"
+              />
+              <span className="text-lg font-semibold">
+                {currentUser?.lastName || "User"}
+              </span>
             </button>
           </li>
           {[
             { tab: "overview", icon: <User />, label: "Overview" },
             { tab: "users", icon: <Users />, label: "Users" },
             { tab: "roles", icon: <Key />, label: "Roles" },
-            { tab: "courseCategories", icon: <BookIcon />, label: "Course Categories" }, // Will stay on one line
+            {
+              tab: "courseCategories",
+              icon: <BookIcon />,
+              label: "Course Categories",
+            },
             { tab: "courses", icon: <BookOpen />, label: "Courses" },
             { tab: "sms", icon: <MessageCircle />, label: "Messages" },
             { tab: "settings", icon: <Settings />, label: "Settings" },
@@ -220,30 +298,37 @@ const AdminDashboard = () => {
             <li key={tab}>
               <button
                 onClick={() => setActiveTab(tab)}
-                className={`flex items-center gap-3 p-3 w-full rounded-lg transition whitespace-nowrap ${activeTab === tab ? "bg-light-primary dark:bg-dark-primary text-white" : "hover:bg-light-accent dark:hover:bg-dark-accent"}`}
+                className={`flex items-center gap-3 p-3 w-full rounded-lg transition whitespace-nowrap ${
+                  activeTab === tab
+                    ? "bg-light-primary dark:bg-dark-primary text-white"
+                    : "hover:bg-light-accent dark:hover:bg-dark-accent"
+                }`}
               >
                 {icon} {label}
               </button>
             </li>
           ))}
         </ul>
-        <div className="mt-6">
-          <ThemeToggle />
-        </div>
-        <div className="mt-4"><LogoutButton /></div>
-        <div className="p-2 mb-4">
-          <Link to="/" className="text-md font-bold text-light-primary hover:text-light-accent dark:text-dark-primary dark:hover:text-dark-accent">Exit Dashboard</Link>
-        </div>
       </aside>
 
       {/* Main Content */}
       <main className="flex-1 p-6 w-full">
+        {/* Menu Button for Mobile */}
+        <button
+          className="md:hidden p-2 fixed top-4 left-4 z-50 bg-light-gray dark:bg-dark-gray rounded-full"
+          onClick={() => setSidebarOpen(true)}
+        >
+          <Menu className="w-6 h-6 text-light-text dark:text-dark-text" />
+        </button>
+
         {toaster && <Toaster message={toaster.message} type={toaster.type} />}
 
         {/* Profile Tab */}
         {activeTab === "profile" && (
           <section className="w-full max-w-4xl mx-auto mt-12 p-6 bg-light-gray dark:bg-dark-gray rounded-lg shadow-lg dark:text-dark-text">
-            <h1 className="text-3xl font-bold mb-6 text-center text-light-primary">Your Profile</h1>
+            <h1 className="text-3xl font-bold mb-6 text-center text-light-primary">
+              Your Profile
+            </h1>
             {loading ? (
               <Loader />
             ) : currentUser ? (
@@ -255,7 +340,10 @@ const AdminDashboard = () => {
                       alt="Profile"
                       className="w-32 h-32 rounded-full border-4 border-light-primary object-cover"
                     />
-                    <label htmlFor="imageUpload" className="absolute bottom-0 right-0 bg-light-primary p-2 rounded-full cursor-pointer">
+                    <label
+                      htmlFor="imageUpload"
+                      className="absolute bottom-0 right-0 bg-light-primary p-2 rounded-full cursor-pointer"
+                    >
                       <Edit2Icon className="w-5 h-5 text-white" />
                     </label>
                     <input
@@ -266,12 +354,21 @@ const AdminDashboard = () => {
                       id="imageUpload"
                     />
                   </div>
-                  <h2 className="text-2xl font-semibold mt-4">{currentUser.firstName} {currentUser.lastName}</h2>
-                  <p className="text-gray-600 dark:text-gray-300">{currentUser.email}</p>
+                  <h2 className="text-2xl font-semibold mt-4">
+                    {currentUser.firstName} {currentUser.lastName}
+                  </h2>
+                  <p className="text-gray-600 dark:text-gray-300">
+                    {currentUser.email}
+                  </p>
                 </div>
-                <form onSubmit={handleEditProfile} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <form
+                  onSubmit={handleEditProfile}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                >
                   <div>
-                    <label className="block text-sm font-medium mb-1">First Name</label>
+                    <label className="block text-sm font-medium mb-1">
+                      First Name
+                    </label>
                     <input
                       type="text"
                       name="firstName"
@@ -281,7 +378,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Last Name</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Last Name
+                    </label>
                     <input
                       type="text"
                       name="lastName"
@@ -291,7 +390,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Email</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Email
+                    </label>
                     <input
                       type="email"
                       name="email"
@@ -301,7 +402,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Phone
+                    </label>
                     <input
                       type="text"
                       name="phoneNumber"
@@ -311,7 +414,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Gender</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Gender
+                    </label>
                     <input
                       type="text"
                       name="gender"
@@ -321,7 +426,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Birth Date</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Birth Date
+                    </label>
                     <input
                       type="date"
                       name="birthDate"
@@ -331,7 +438,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Country</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Country
+                    </label>
                     <input
                       type="text"
                       name="country"
@@ -341,7 +450,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">City</label>
+                    <label className="block text-sm font-medium mb-1">
+                      City
+                    </label>
                     <input
                       type="text"
                       name="city"
@@ -351,7 +462,9 @@ const AdminDashboard = () => {
                     />
                   </div>
                   <div className="md:col-span-2">
-                    <label className="block text-sm font-medium mb-1">Address</label>
+                    <label className="block text-sm font-medium mb-1">
+                      Address
+                    </label>
                     <input
                       type="text"
                       name="address"
@@ -371,7 +484,9 @@ const AdminDashboard = () => {
                 </form>
               </div>
             ) : (
-              <p className="text-center text-gray-600 dark:text-gray-300">Unable to load profile data.</p>
+              <p className="text-center text-gray-600 dark:text-gray-300">
+                Unable to load profile data.
+              </p>
             )}
           </section>
         )}
@@ -379,13 +494,25 @@ const AdminDashboard = () => {
         {/* Overview Tab */}
         {activeTab === "overview" && (
           <section className="min-h-screen">
-            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">Dashboard Overview</h1>
+            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">
+              Dashboard Overview
+            </h1>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-12">
               <Card title="Users" value={users.length} icon={<Users />} />
-              <Card title="Courses" value={courses.length} icon={<BookOpen />} />
-              <Card title="Messages" value={messages ? messages.length : 0} icon={<MessageCircle />} />
+              <Card
+                title="Courses"
+                value={courses.length}
+                icon={<BookOpen />}
+              />
+              <Card
+                title="Messages"
+                value={messages ? messages.length : 0}
+                icon={<MessageCircle />}
+              />
             </div>
-            <div className="bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg"><UserExpansionTrend /></div>
+            <div className="bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg">
+              <UserExpansionTrend />
+            </div>
           </section>
         )}
 
@@ -393,7 +520,9 @@ const AdminDashboard = () => {
         {activeTab === "users" && (
           <section>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Manage Users</h1>
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">
+                Manage Users
+              </h1>
               <input
                 type="text"
                 className="w-full sm:w-64 p-3 rounded-lg bg-white dark:bg-black border border-light-primary dark:border-dark-primary focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
@@ -402,30 +531,58 @@ const AdminDashboard = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
-            {loading ? <Loader /> : error ? (
-              <p className="text-red-600 dark:text-red-400 text-center">{error}</p>
+            {loading ? (
+              <Loader />
+            ) : error ? (
+              <p className="text-red-600 dark:text-red-400 text-center">
+                {error}
+              </p>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentUsers.map((user: any) => (
-                    <div key={user.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition">
-                      <h3 className="text-lg font-semibold truncate">{user.email}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{user.firstName} {user.lastName}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Role: {user.role || "N/A"}</p>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Status: {user.status ? "Active" : "Inactive"}</p>
+                    <div
+                      key={user.id}
+                      className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition"
+                    >
+                      <h3 className="text-lg font-semibold truncate">
+                        {user.email}
+                      </h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        {user.firstName} {user.lastName}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Role: {user.roleDetail?.name || user.role || "N/A"}
+                      </p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        Status: {user.status ? "Active" : "Inactive"}
+                      </p>
                       <button
                         className="mt-3 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition w-full flex items-center justify-center gap-2"
-                        onClick={() => { setSelectedUser(user); setIsModalOpen(true); }}
+                        onClick={() => {
+                          setSelectedUser(user);
+                          setIsModalOpen(true);
+                        }}
                       >
                         <Edit size={16} /> Assign Role
                       </button>
                     </div>
                   ))}
                 </div>
-                <Pagination currentPage={usersPage} totalPages={totalUsersPages} onPageChange={setUsersPage} />
+                <Pagination
+                  currentPage={usersPage}
+                  totalPages={totalUsersPages}
+                  onPageChange={setUsersPage}
+                />
               </>
             )}
-            {isModalOpen && selectedUser && <AssignRoleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} user={selectedUser} />}
+            {selectedUser && (
+              <AssignRoleModal
+                isOpen={isModalOpen}
+                onClose={() => setIsModalOpen(false)}
+                user={selectedUser}
+              />
+            )}
           </section>
         )}
 
@@ -433,22 +590,41 @@ const AdminDashboard = () => {
         {activeTab === "roles" && (
           <section className="min-h-screen">
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Manage Roles</h1>
-              <button onClick={() => setIsModalOpen(true)} className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">+ Add Role</button>
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">
+                Manage Roles
+              </h1>
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition"
+              >
+                + Add Role
+              </button>
             </div>
-            {roleLoading ? <Loader /> : roleError ? (
-              <p className="text-red-600 dark:text-red-400 text-center">{roleError}</p>
+            {roleLoading ? (
+              <Loader />
+            ) : roleError ? (
+              <p className="text-red-600 dark:text-red-400 text-center">
+                {roleError}
+              </p>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentRoles.map((role: any) => (
-                    <div key={role.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition">
+                    <div
+                      key={role.id}
+                      className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition"
+                    >
                       <h3 className="text-lg font-semibold">{role.name}</h3>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">ID: {role.id}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">
+                        ID: {role.id}
+                      </p>
                       <div className="mt-3 flex gap-2">
                         <button
                           className="flex-1 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition flex items-center justify-center gap-2"
-                          onClick={() => { setSelectedRole(role); setIsEditModalOpen(true); }}
+                          onClick={() => {
+                            setSelectedRole(role);
+                            setIsEditModalOpen(true);
+                          }}
                         >
                           <Edit size={16} /> Edit
                         </button>
@@ -462,11 +638,25 @@ const AdminDashboard = () => {
                     </div>
                   ))}
                 </div>
-                <Pagination currentPage={rolesPage} totalPages={totalRolesPages} onPageChange={setRolesPage} />
+                <Pagination
+                  currentPage={rolesPage}
+                  totalPages={totalRolesPages}
+                  onPageChange={setRolesPage}
+                />
               </>
             )}
-            <AddRoleModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
-            {isEditModalOpen && <EditRoleModal isOpen={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} role={selectedRole} />}
+            <AddRoleModal
+              isOpen={isModalOpen}
+              onClose={() => setIsModalOpen(false)}
+            />
+            {selectedRole && (
+              <EditRoleModal
+                isOpen={isEditModalOpen}
+                onClose={() => setIsEditModalOpen(false)}
+                role={selectedRole}
+                onRoleUpdated={handleRoleUpdated}
+              />
+            )}
           </section>
         )}
 
@@ -474,24 +664,47 @@ const AdminDashboard = () => {
         {activeTab === "courses" && (
           <section>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Manage Courses</h1>
-              <button onClick={() => setIsAddCourseModalOpen(true)} className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">+ Add Course</button>
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">
+                Manage Courses
+              </h1>
+              <button
+                onClick={() => setIsAddCourseModalOpen(true)}
+                className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition"
+              >
+                + Add Course
+              </button>
             </div>
             {courses.length === 0 ? (
-              <p className="text-center text-gray-600 dark:text-gray-300">No courses available.</p>
+              <p className="text-center text-gray-600 dark:text-gray-300">
+                No courses available.
+              </p>
             ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentCourses.map((course: any) => (
-                    <div key={course.id} className="bg-light-gray dark:bg-dark-gray rounded-xl shadow-md overflow-hidden hover:shadow-lg transition">
-                      <img src={course.image || careerDevImg} alt={course.title} className="w-full h-40 object-cover" />
+                    <div
+                      key={course.id}
+                      className="bg-light-gray dark:bg-dark-gray rounded-xl shadow-md overflow-hidden hover:shadow-lg transition"
+                    >
+                      <img
+                        src={course.image || careerDevImg}
+                        alt={course.title}
+                        className="w-full h-40 object-cover"
+                      />
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold truncate">{course.title}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">category: {course.categoryId}</p>
+                        <h3 className="text-lg font-semibold truncate">
+                          {course.title}
+                        </h3>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                          category: {course.categoryId}
+                        </p>
                         <div className="mt-4 flex gap-2">
                           <button
                             className="flex-1 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition flex items-center justify-center gap-2"
-                            onClick={() => { setSelectedCourse(course); setIsEditCourseModalOpen(true); }}
+                            onClick={() => {
+                              setSelectedCourse(course);
+                              setIsEditCourseModalOpen(true);
+                            }}
                           >
                             <Edit size={16} /> Edit
                           </button>
@@ -506,11 +719,24 @@ const AdminDashboard = () => {
                     </div>
                   ))}
                 </div>
-                <Pagination currentPage={coursesPage} totalPages={totalCoursesPages} onPageChange={setCoursesPage} />
+                <Pagination
+                  currentPage={coursesPage}
+                  totalPages={totalCoursesPages}
+                  onPageChange={setCoursesPage}
+                />
               </>
             )}
-            <AddCourseModal isOpen={isAddCourseModalOpen} onClose={() => setIsAddCourseModalOpen(false)} />
-            {isEditCourseModalOpen && <EditCourseModal isOpen={isEditCourseModalOpen} onClose={() => setIsEditCourseModalOpen(false)} course={selectedCourse} />}
+            <AddCourseModal
+              isOpen={isAddCourseModalOpen}
+              onClose={() => setIsAddCourseModalOpen(false)}
+            />
+            {isEditCourseModalOpen && (
+              <EditCourseModal
+                isOpen={isEditCourseModalOpen}
+                onClose={() => setIsEditCourseModalOpen(false)}
+                course={selectedCourse}
+              />
+            )}
           </section>
         )}
 
@@ -518,26 +744,45 @@ const AdminDashboard = () => {
         {activeTab === "courseCategories" && (
           <section>
             <div className="flex flex-col sm:flex-row justify-between items-center mb-8">
-              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">Course Categories</h1>
-              <button onClick={() => setIsAddCourseCategoryModalOpen(true)} className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition">+ Add Category</button>
+              <h1 className="text-3xl font-bold mb-4 sm:mb-0 text-light-secondary dark:text-dark-secondary">
+                Course Categories
+              </h1>
+              <button
+                onClick={() => setIsAddCourseCategoryModalOpen(true)}
+                className="bg-light-primary dark:bg-dark-primary text-white p-3 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition"
+              >
+                + Add Category
+              </button>
             </div>
-            {categoryLoading ? <Loader /> : (
+            {categoryLoading ? (
+              <Loader />
+            ) : (
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {currentCategories.map((category: any) => (
-                    <div key={category.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition">
+                    <div
+                      key={category.id}
+                      className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition"
+                    >
                       <h3 className="text-lg font-semibold">{category.name}</h3>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{category.description}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">
+                        {category.description}
+                      </p>
                       <div className="mt-3 flex gap-2">
                         <button
                           className="flex-1 bg-light-primary dark:bg-dark-primary text-white p-2 rounded-lg hover:bg-light-accent dark:hover:bg-dark-accent transition flex items-center justify-center gap-2"
-                          onClick={() => { setSelectedCourseCategory(category.id); setIsEditCourseCategoryModalOpen(true); }}
+                          onClick={() => {
+                            setSelectedCourseCategory(category.id);
+                            setIsEditCourseCategoryModalOpen(true);
+                          }}
                         >
                           <Edit size={16} /> Edit
                         </button>
                         <button
                           className="flex-1 bg-red-500 text-white p-2 rounded-lg hover:bg-red-600 transition flex items-center justify-center gap-2"
-                          onClick={() => handleDeleteCourseCategory(category.id)}
+                          onClick={() =>
+                            handleDeleteCourseCategory(category.id)
+                          }
                         >
                           <Trash size={16} /> Delete
                         </button>
@@ -545,30 +790,55 @@ const AdminDashboard = () => {
                     </div>
                   ))}
                 </div>
-                <Pagination currentPage={categoriesPage} totalPages={totalCategoriesPages} onPageChange={setCategoriesPage} />
+                <Pagination
+                  currentPage={categoriesPage}
+                  totalPages={totalCategoriesPages}
+                  onPageChange={setCategoriesPage}
+                />
               </>
             )}
-            {isAddCourseCategoryModalOpen && <AddCategoryModel isOpen={isAddCourseCategoryModalOpen} onClose={() => setIsAddCourseCategoryModalOpen(false)} />}
-            {isEditCourseCategoryModalOpen && <EditCatModel isOpen={isEditCourseCategoryModalOpen} onClose={() => setIsEditCourseCategoryModalOpen(false)} categoryId={selectedCourseCategory} />}
+            {isAddCourseCategoryModalOpen && (
+              <AddCategoryModel
+                isOpen={isAddCourseCategoryModalOpen}
+                onClose={() => setIsAddCourseCategoryModalOpen(false)}
+              />
+            )}
+            {isEditCourseCategoryModalOpen && (
+              <EditCatModel
+                isOpen={isEditCourseCategoryModalOpen}
+                onClose={() => setIsEditCourseCategoryModalOpen(false)}
+                categoryId={selectedCourseCategory}
+              />
+            )}
           </section>
         )}
 
         {/* Messages Tab */}
-        {/* Updated: Removed Edit button, implemented frontend-only delete */}
         {activeTab === "sms" && (
           <section>
-            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">Messages</h1>
+            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">
+              Messages
+            </h1>
             {messages.length === 0 ? (
-              <p className="text-center text-gray-600 dark:text-gray-300">No messages available.</p>
+              <p className="text-center text-gray-600 dark:text-gray-300">
+                No messages available.
+              </p>
             ) : (
               <>
                 <div className="space-y-6">
                   {currentMessages.map((message: any) => (
-                    <div key={message.id} className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div
+                      key={message.id}
+                      className="bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-md hover:shadow-lg transition flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+                    >
                       <div className="flex-1">
-                        <p className="text-sm text-gray-500 dark:text-gray-400">ID: {message.id}</p>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">
+                          ID: {message.id}
+                        </p>
                         <p className="text-lg font-semibold">{message.email}</p>
-                        <p className="text-gray-600 dark:text-gray-300 line-clamp-2">{message.message}</p>
+                        <p className="text-gray-600 dark:text-gray-300 line-clamp-2">
+                          {message.message}
+                        </p>
                       </div>
                       <div className="flex gap-2 w-full sm:w-auto">
                         <button
@@ -581,36 +851,61 @@ const AdminDashboard = () => {
                     </div>
                   ))}
                 </div>
-                <Pagination currentPage={messagesPage} totalPages={totalMessagesPages} onPageChange={setMessagesPage} />
+                <Pagination
+                  currentPage={messagesPage}
+                  totalPages={totalMessagesPages}
+                  onPageChange={setMessagesPage}
+                />
               </>
             )}
           </section>
         )}
 
-        {/* Settings Tab */}
         {activeTab === "settings" && (
-          <section>
-            <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">Admin Settings</h1>
-            <div className="max-w-md mx-auto bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg space-y-6">
-              <div>
-                <label htmlFor="theme" className="block text-sm font-medium mb-2">Theme</label>
-                <select
-                  id="theme"
-                  className="w-full p-3 rounded-lg bg-white dark:bg-black border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
-                >
-                  <option value="light">Light Mode</option>
-                  <option value="dark">Dark Mode</option>
-                </select>
-              </div>
-              <div>
-                <label htmlFor="user-settings" className="block text-sm font-medium mb-2">User Settings</label>
-                <select
-                  id="user-settings"
-                  className="w-full p-3 rounded-lg bg-white dark:bg-black border border-light-gray dark:border-dark-gray focus:outline-none focus:ring-2 focus:ring-light-primary dark:focus:ring-dark-primary"
-                >
-                  <option value="change-password">Change Password</option>
-                  <option value="reset-account">Reset Account</option>
-                </select>
+          <section className="min-h-screen flex items-center justify-center">
+            <div className="w-full max-w-md mx-auto">
+              <h1 className="text-3xl font-bold mb-8 text-center text-light-secondary dark:text-dark-secondary">
+                Settings
+              </h1>
+              <div className="bg-light-gray dark:bg-dark-gray p-6 rounded-xl shadow-lg space-y-8">
+                {/* Theme Section */}
+                <div className="border-b border-gray-300 dark:border-gray-600 pb-4">
+                  <h2 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3">
+                    Theme
+                  </h2>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      Toggle between light and dark mode
+                    </span>
+                    <ThemeToggle />
+                  </div>
+                </div>
+
+                {/* Session Section */}
+                <div className="border-b border-gray-300 dark:border-gray-600 pb-4">
+                  <h2 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3">
+                    Session
+                  </h2>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm text-gray-600 dark:text-gray-300">
+                      End your current session
+                    </span>
+                    <LogoutButton />
+                  </div>
+                </div>
+
+                {/* Navigation Section */}
+                <div>
+                  <h2 className="text-lg font-semibold text-light-text dark:text-dark-text mb-3">
+                    Navigation
+                  </h2>
+                  <Link
+                    to="/"
+                    className="block w-full text-md font-medium text-light-primary dark:text-dark-primary hover:text-light-accent dark:hover:text-dark-accent bg-light-background dark:bg-dark-background py-2 px-4 rounded-lg hover:bg-light-accent/10 dark:hover:bg-dark-accent/20 transition-colors duration-200"
+                  >
+                    Exit Dashboard
+                  </Link>
+                </div>
               </div>
             </div>
           </section>

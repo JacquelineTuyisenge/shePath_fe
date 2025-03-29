@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 // import type { PayloadAction } from "@reduxjs/toolkit";
 import axiosInstance from "../axiosInstance";
+import { assignRole } from "./roleSlice";
 
 export interface User {
     profile?: string;
@@ -9,6 +10,7 @@ export interface User {
     firstName: string;
     lastName: string;
     role: string;
+    roleDetail: {id: string};
     status: string;
     createdAt: string;
     phoneNumber?: string;
@@ -116,7 +118,15 @@ const userSlice = createSlice({
             .addCase(editProfile.rejected, (state, action) => {
                 state.loading = false;
                 state.error = action.payload as string;
-            });
+            })
+            .addCase(assignRole.fulfilled, (state, action) => {
+                const { updatedUser } = action.payload;
+                const index = state.users.findIndex((user) => user.id === updatedUser.id);
+                if (index !== -1) {
+                  state.users[index] = { ...state.users[index], ...updatedUser }; // Merge updated user data
+                }
+              });
+            ;
     },
 });
 

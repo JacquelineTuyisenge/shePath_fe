@@ -10,7 +10,6 @@ import Loader from "./Loader";
 import Toaster from "./Toaster";
 import { FaArrowRight } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { isAuthenticated } from "../utils/utils";
 import careerDevImg from "../assets/career.jpg";
 
 const CircularProgress = ({ percentage }: { percentage: number }) => {
@@ -45,7 +44,7 @@ interface CoursesListProps {
   setToaster?: (message: string, type: "success" | "error") => void;
 }
 
-const CoursesList: React.FC<CoursesListProps> = ({ setToaster }) => {
+const CoursesList: React.FC<CoursesListProps> = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
   const { courses, loading, error, progress: courseProgressMap } = useSelector((state: RootState) => state.courses);
@@ -91,15 +90,6 @@ const CoursesList: React.FC<CoursesListProps> = ({ setToaster }) => {
   });
 
   const handleViewDetails = (courseId: string) => {
-    if (!isAuthenticated()) {
-      if (setToaster) {
-        setToaster("Please log in to view course details", "error");
-      } else {
-        setToasterMessage("Please log in to view course details");
-        setTimeout(() => setToasterMessage(null), 3000);
-      }
-      return;
-    }
     navigate(`/courses/${courseId}`);
   };
 
@@ -108,6 +98,8 @@ const CoursesList: React.FC<CoursesListProps> = ({ setToaster }) => {
       id="programs"
       className="max-h-screen w-full justify-center p-8 bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text"
     >
+      {toasterMessage && <Toaster message={toasterMessage} type="error" />}
+
       {loading && <Loader />}
       {!loading && (
         <>
@@ -172,7 +164,6 @@ const CoursesList: React.FC<CoursesListProps> = ({ setToaster }) => {
             <div className="custom-prev text-orange-500 hover:text-orange-700 cursor-pointer">Prev</div>
             <div className="custom-next text-orange-500 hover:text-orange-700 cursor-pointer">Next</div>
           </div>
-      {toasterMessage && <Toaster message={toasterMessage} type="error" />}
 
         </>
       )}

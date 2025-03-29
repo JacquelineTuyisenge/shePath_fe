@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import axiosInstance from '../axiosInstance'; 
 
 interface Mentor {
+    phoneNumber: string;
     id: string;
     userName: string;
     firstName: string;

@@ -120,7 +120,13 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
         <Loader />
       ) : (
         <div className="min-h-screen p-4 bg-light-background dark:bg-dark-background shadow-md rounded-lg">
-          {toaster && <Toaster message={toaster.message} type={toaster.type} />}
+          {toaster && (
+              <Toaster
+                  message={toaster.message}
+                  type={toaster.type}
+                  onClose={() => setToaster(null)} // Reset toaster state
+              />
+          )}
           {topic ? (
             <>
               <h1 className="text-2xl font-semibold text-light-text dark:text-dark-text">{topic.content}</h1>
