@@ -69,7 +69,7 @@ export const assignRole = createAsyncThunk(
     async ({ userId, role }: { userId: string; role: string }, { rejectWithValue }) => {
       try {
         const response = await axiosInstance.patch(`api/roles/assign/${userId}`, { role });
-        return { userId, role, message: response.data.message };
+        return { updatedUser: response.data.data, message: response.data.message }; // Return updatedUser
       } catch (error: any) {
         return rejectWithValue(error.response?.data?.message || "Failed to assign role!");
       }

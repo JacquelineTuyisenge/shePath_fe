@@ -11,8 +11,8 @@ export default defineConfig({
       includeAssets: ['favicon.ico', 'robots.txt'],
       manifest: {
         id: "/",
-        name: 'She Path App',
-        short_name: 'Courses',
+        name: 'ShePathApp',
+        short_name: 'ShePath',
         description: 'Learn anywhere, anytime with offline access!',
         theme_color: '#ffffff',
         screenshots: [
@@ -37,8 +37,8 @@ export default defineConfig({
         ],
         icons: [
           {
-            src: '/square.jpg',
-            sizes: '640x640',
+            src: '/one.jpg',
+            sizes: '490x490',
             type: 'image/jpg'
           },
           {

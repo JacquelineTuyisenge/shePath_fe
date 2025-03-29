@@ -1,4 +1,3 @@
-// src/components/CourseDetails.tsx
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -19,13 +18,15 @@ function CourseDetails() {
   const { id } = useParams<{ id: string }>();
   const [progress, setProgress] = useState(0);
   const [isCompleted, setIsCompleted] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Fetch course details and progress on mount or when id/currentUser changes
   useEffect(() => {
     if (!id) return;
 
+    // Fetch course details regardless of authentication
     dispatch(fetchCourseDetails(id)).unwrap().catch(() => {});
 
+    // Only fetch progress/user data if authenticated
     if (!currentUser) {
       dispatch(getProfile()).unwrap().catch(() => {});
     } else if (id) {
@@ -38,7 +39,6 @@ function CourseDetails() {
     }
   }, [dispatch, id, currentUser]);
 
-  // Sync local state with Redux store when courseProgressMap updates
   useEffect(() => {
     if (id && courseProgressMap[id]) {
       setProgress(courseProgressMap[id].progress);
@@ -47,9 +47,15 @@ function CourseDetails() {
   }, [id, courseProgressMap]);
 
   const handleMarkAsComplete = () => {
-    setProgress(100); // Set progress to 100% locally
+    if (!currentUser) {
+      setToastMessage("Please log in to mark this course as complete.");
+      setTimeout(() => setToastMessage(null), 3000);
+      return;
+    }
+
+    setProgress(100);
     setIsCompleted(true);
-    if (currentUser && id) {
+    if (id) {
       dispatch(updateCourseProgress({ courseId: id, progress: 100, completed: true }));
     }
   };
@@ -62,6 +68,7 @@ function CourseDetails() {
 
   return (
     <div className="min-h-screen w-full bg-light-background dark:bg-dark-background text-light-text dark:text-dark-text">
+      {toastMessage && <Toaster message={toastMessage} type="error" />}
       <div className="relative w-full h-[50vh] md:h-[60vh] overflow-hidden">
         <img
           src={courseImage}
@@ -71,9 +78,7 @@ function CourseDetails() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30 flex items-center justify-center">
           <div className="text-center px-4">
-            <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">
-              {singleCourse.title}
-            </h1>
+            <h1 className="text-3xl md:text-5xl font-bold text-white drop-shadow-lg">{singleCourse.title}</h1>
             <p className="mt-2 text-lg md:text-xl text-white/80">{singleCourse.categoryName}</p>
           </div>
         </div>
@@ -96,24 +101,30 @@ function CourseDetails() {
         </section>
         <section className="sticky bottom-4 bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
           <div className="w-full sm:w-2/3">
-            <div className="text-sm font-medium mb-1">Progress: {Math.round(progress)}%</div>
-            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-              <div
-                className="bg-light-primary dark:bg-dark-primary h-2.5 rounded-full transition-all duration-300"
-                style={{ width: `${progress}%` }}
-              />
+            <div className="text-sm font-medium mb-1">
+              Progress: {currentUser ? Math.round(progress) : "N/A"}%
             </div>
+            {currentUser ? (
+              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                <div
+                  className="bg-light-primary dark:bg-dark-primary h-2.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progress}%` }}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">Log in to track progress</p>
+            )}
           </div>
           <button
             onClick={handleMarkAsComplete}
-            disabled={isCompleted || loading}
+            disabled={isCompleted && !!currentUser} // Only disable if completed AND authenticated
             className={`px-6 py-2 rounded-lg text-white flex items-center gap-2 transition ${
-              isCompleted
+              isCompleted && currentUser
                 ? "bg-green-500 cursor-not-allowed"
                 : "bg-light-primary dark:bg-dark-primary hover:bg-light-accent dark:hover:bg-dark-accent"
             }`}
           >
-            {isCompleted ? (
+            {isCompleted && currentUser ? (
               <>
                 <FaCheckCircle /> Completed
               </>

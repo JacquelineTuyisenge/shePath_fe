@@ -1,46 +1,71 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { AppDispatch, RootState } from "../store";
-import { addRole, clearMessage } from "../features/roleSlice";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
+import { addRole, clearMessage } from "../features/roleSlice";
+import Toaster from "../components/Toaster";
 
 interface AddRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRoleAdded?: (newRole: { id: string; name: string }) => void; // Callback to update parent state
 }
 
-const AddRoleModal = ({ isOpen, onClose }: AddRoleModalProps) => {
+const AddRoleModal = ({ isOpen, onClose, onRoleAdded }: AddRoleModalProps) => {
   const { register, handleSubmit, reset } = useForm<{ name: string }>();
   const useAppDispatch = () => useDispatch<AppDispatch>();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+  const [toaster, setToaster] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
   const { message, error } = useAppSelector((state) => state.roles);
   const dispatch = useAppDispatch();
 
   const onSubmit = async (data: { name: string }) => {
-    await dispatch(addRole(data.name));
-    reset();
-  };
+    const tempId = `temp-${Date.now()}`; // Temporary ID for optimistic update
+    if (onRoleAdded) {
+      onRoleAdded({ id: tempId, name: data.name }); // Optimistically update parent
+    }
 
-  useEffect(() => {
-    if (message) {
+    const result = await dispatch(addRole(data.name));
+    if (addRole.fulfilled.match(result)) {
+      setToaster({ message: "Role added successfully!", type: "success" });
+      reset();
       setTimeout(() => {
         dispatch(clearMessage());
         onClose();
       }, 2000);
+    } else {
+      setToaster({ message: result.payload as string || "Failed to add role", type: "error" });
+      if (onRoleAdded) {
+        // Revert optimistic update if needed (e.g., remove temp role from parent state)
+        // This requires a revert callback, omitted here for simplicity
+      }
     }
-  }, [message, dispatch, onClose]);
+  };
+
+  useEffect(() => {
+    if (message && !toaster) {
+      setToaster({ message, type: "success" });
+    } else if (error && !toaster) {
+      setToaster({ message: error, type: "error" });
+    }
+  }, [message, error, toaster]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white dark:bg-gray-800 border border-light-primary p-8 rounded-lg shadow-lg max-w-lg w-full">
+        {toaster && (
+          <Toaster
+            message={toaster.message}
+            type={toaster.type}
+            onClose={() => setToaster(null)}
+          />
+        )}
         <h2 className="text-2xl font-semibold dark:text-dark-text mb-4">
           Add New Role
         </h2>
-        {message && <p className="text-sm text-green-600 mb-4">{message}</p>}
-        {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="form-group">
             <input

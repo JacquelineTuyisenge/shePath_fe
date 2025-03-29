@@ -3,57 +3,83 @@ import { useForm } from "react-hook-form";
 import { AppDispatch, RootState } from "../store";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { assignRole, getRoles, clearMessage } from "../features/roleSlice";
+import Toaster from "../components/Toaster";
 
 interface AssignRoleModalProps {
   isOpen: boolean;
   onClose: () => void;
   user: any;
+  onRoleAssigned?: (userId: string, role: string) => void; // Optional, but not needed if thunk updates state
 }
 
 const AssignRoleModal = ({ isOpen, onClose, user }: AssignRoleModalProps) => {
   const { handleSubmit, reset } = useForm();
-
   const useAppDispatch = () => useDispatch<AppDispatch>();
   const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+  const [toaster, setToaster] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
   const dispatch = useAppDispatch();
   const roles = useAppSelector((state) => state.roles.roles);
-
   const { message, error } = useAppSelector((state) => state.roles);
 
   const [selectedRole, setSelectedRole] = useState(user?.role || "");
+  const [isSubmitted, setIsSubmitted] = useState(false);
 
   useEffect(() => {
-    dispatch(getRoles()); // Fetch roles when the modal opens
+    dispatch(getRoles());
   }, [dispatch]);
 
   const onSubmit = async () => {
     if (selectedRole) {
-      await dispatch(assignRole({ userId: user.id, role: selectedRole }));
+      setIsSubmitted(true);
+      const result = await dispatch(assignRole({ userId: user.id, role: selectedRole }));
+      if (assignRole.fulfilled.match(result)) {
+        setToaster({ message: "Role assigned successfully!", type: "success" });
+        reset();
+        setTimeout(() => {
+          dispatch(clearMessage());
+          onClose();
+        }, 2000);
+      } else {
+        setToaster({ message: result.payload as string || "Failed to assign role", type: "error" });
+      }
     }
-    reset();
   };
 
   useEffect(() => {
-    if (message) {
-      setTimeout(() => {
-        dispatch(clearMessage());
-        onClose();
-      }, 2000);
+    if (isOpen) {
+      dispatch(clearMessage());
+      setToaster(null);
+      setIsSubmitted(false);
+      setSelectedRole(user?.role || ""); // Reset to current role
     }
-  }, [message, dispatch, onClose]);
+  }, [isOpen, dispatch, user]);
+
+  useEffect(() => {
+    if (isSubmitted) {
+      if (message) {
+        setToaster({ message, type: "success" });
+      } else if (error) {
+        setToaster({ message: error, type: "error" });
+      }
+    }
+  }, [message, error, isSubmitted]);
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
       <div className="bg-white dark:bg-gray-800 border border-light-primary p-8 rounded-lg shadow-lg max-w-lg w-full">
+        {toaster && (
+          <Toaster
+            message={toaster.message}
+            type={toaster.type}
+            onClose={() => setToaster(null)}
+          />
+        )}
         <h2 className="text-2xl font-semibold text-primary dark:text-dark-text mb-4">
           Assign Role
         </h2>
-        {message && <p className="text-sm text-green-600 mb-4">{message}</p>}
-        {error && <p className="text-sm text-red-500 mb-4">{error}</p>}
-
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div className="form-group">
             <label className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -75,7 +101,6 @@ const AssignRoleModal = ({ isOpen, onClose, user }: AssignRoleModalProps) => {
               ))}
             </select>
           </div>
-
           <div className="flex justify-between items-center">
             <button
               type="button"
