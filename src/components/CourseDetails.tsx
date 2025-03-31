@@ -20,16 +20,18 @@ function CourseDetails() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
+  const role = localStorage.getItem("role");
+  const isLearner = role === "Learner";
+  
+
   useEffect(() => {
     if (!id) return;
 
-    // Fetch course details regardless of authentication
     dispatch(fetchCourseDetails(id)).unwrap().catch(() => {});
 
-    // Only fetch progress/user data if authenticated
     if (!currentUser) {
       dispatch(getProfile()).unwrap().catch(() => {});
-    } else if (id) {
+    } else if (id && isLearner) {
       dispatch(fetchCourseProgress(id)).then((result) => {
         if (result.meta.requestStatus === "fulfilled") {
           setProgress(result.payload.progress);
@@ -99,40 +101,42 @@ function CourseDetails() {
             dangerouslySetInnerHTML={{ __html: singleCourse.content }}
           />
         </section>
-        <section className="sticky bottom-4 bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
-          <div className="w-full sm:w-2/3">
-            <div className="text-sm font-medium mb-1">
-              Progress: {currentUser ? Math.round(progress) : "N/A"}%
-            </div>
-            {currentUser ? (
-              <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
-                <div
-                  className="bg-light-primary dark:bg-dark-primary h-2.5 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                />
+        {isLearner && (
+          <section className="sticky bottom-4 bg-light-gray dark:bg-dark-gray p-4 rounded-xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="w-full sm:w-2/3">
+              <div className="text-sm font-medium mb-1">
+                Progress: {currentUser ? Math.round(progress) : "N/A"}%
               </div>
-            ) : (
-              <p className="text-sm text-gray-500">Log in to track progress</p>
-            )}
-          </div>
-          <button
-            onClick={handleMarkAsComplete}
-            disabled={isCompleted && !!currentUser} // Only disable if completed AND authenticated
-            className={`px-6 py-2 rounded-lg text-white flex items-center gap-2 transition ${
-              isCompleted && currentUser
-                ? "bg-green-500 cursor-not-allowed"
-                : "bg-light-primary dark:bg-dark-primary hover:bg-light-accent dark:hover:bg-dark-accent"
-            }`}
-          >
-            {isCompleted && currentUser ? (
-              <>
-                <FaCheckCircle /> Completed
-              </>
-            ) : (
-              "Mark as Complete"
-            )}
-          </button>
-        </section>
+              {currentUser ? (
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                  <div
+                    className="bg-light-primary dark:bg-dark-primary h-2.5 rounded-full transition-all duration-300"
+                    style={{ width: `${progress}%` }}
+                  />
+                </div>
+              ) : (
+                <p className="text-sm text-gray-500">Log in to track progress</p>
+              )}
+            </div>
+            <button
+              onClick={handleMarkAsComplete}
+              disabled={isCompleted && !!currentUser} // Only disable if completed AND authenticated
+              className={`px-6 py-2 rounded-lg text-white flex items-center gap-2 transition ${
+                isCompleted && currentUser
+                  ? "bg-green-500 cursor-not-allowed"
+                  : "bg-light-primary dark:bg-dark-primary hover:bg-light-accent dark:hover:bg-dark-accent"
+              }`}
+            >
+              {isCompleted && currentUser ? (
+                <>
+                  <FaCheckCircle /> Completed
+                </>
+              ) : (
+                "Mark as Complete"
+              )}
+            </button>
+          </section>
+        )}
       </div>
     </div>
   );

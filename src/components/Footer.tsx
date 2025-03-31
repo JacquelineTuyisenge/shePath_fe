@@ -40,31 +40,31 @@ const Footer = () => {
   }, [dispatch]);
 
   return (
-    <footer id="contact" className="bg-light-secondary dark:bg-dark-gray text-light-text dark:text-dark-text py-8 mt-4">
+    <footer id="contact" className="bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text py-8 mt-4">
       <div className="container mx-auto px-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
         {/* Company Info */}
         <div>
-          <h2 className="text-xl text-white dark:text-dark-primary font-semibold">
+          <h2 className="text-xl text-light-primary font-semibold">
             {t('companyName')}
           </h2>
-          <p className="mt-2 text-gray-300 dark:text-gray-400">
+          <p className="mt-2 dark:text-gray-400">
             {t('empoweringText')}
           </p>
         </div>
 
         {/* Quick Links */}
         <div>
-          <h2 className="text-xl text-white font-semibold">{t('quickLinks')}</h2>
+          <h2 className="text-xl font-semibold">{t('quickLinks')}</h2>
           <ul className="mt-2 space-y-2">
-            <li><a href="/about" className="text-gray-300 dark:text-gray-400 hover:text-light-accent">{t('aboutUs')}</a></li>
-            <li><a href="/courses" className="text-gray-300 dark:text-gray-400 hover:text-light-accent">{t('programs')}</a></li>
-            <li><a href="/policy" className="text-gray-300 dark:text-gray-400 hover:text-light-accent">{t('privacyPolicy')}</a></li>
+            <li><a href="/about" className="dark:text-gray-400 hover:text-light-accent">{t('aboutUs')}</a></li>
+            <li><a href="/courses" className="dark:text-gray-400 hover:text-light-accent">{t('programs')}</a></li>
+            <li><a href="/policy" className="dark:text-gray-400 hover:text-light-accent">{t('privacyPolicy')}</a></li>
           </ul>
         </div>
 
         {/* Contact Form & Social Media */}
         <div>
-          <h2 className="text-xl text-white font-semibold">{t('contactUs')}</h2>
+          <h2 className="text-xl font-semibold">{t('contactUs')}</h2>
           <form className="mt-2 flex flex-col md:flex-row md:space-x-4 space-y-4 md:space-y-0" onSubmit={handleSubmit}>
               <input
                 type="email"
@@ -92,23 +92,23 @@ const Footer = () => {
           </form>
           {toaster && <Toaster message={toaster.message} type={toaster.type} />}
           <div className="flex justify-center space-x-4 mt-4">
-            <a href="#" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
+            <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
               <FaFacebook />
             </a>
-            <a href="#" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
+            <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
               <FaTwitter />
             </a>
             <a href="https://www.linkedin.com/in/tuyisenge-jacqueline-69b393240/" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
               <FaLinkedin />
             </a>
-            <a href="#" className="text-gray-300 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
+            <a href="#" className="text-gray-500 dark:text-gray-400 hover:text-light-accent dark:hover:text-light-accent text-2xl">
               <FaInstagram />
             </a>
           </div>
         </div>
       </div>
 
-      <div className="text-center text-gray-300 dark:text-gray-400 text-sm mt-8 border-t border-gray-300 dark:border-gray-700 pt-4">
+      <div className="text-center text-gray-400 dark:text-gray-400 text-sm mt-8 border-t border-gray-300 dark:border-gray-700 pt-4">
         &copy; {new Date().getFullYear()} {t('companyName')}. {t('allRightsReserved')}
       </div>
     </footer>

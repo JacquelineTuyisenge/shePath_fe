@@ -10,6 +10,87 @@ import heroPic from "../assets/heroPic.svg";
 import AboutPage from "./About";
 import { fadeInUp, fadeInLeft, slideInFromRight } from "./motionVariants";
 
+
+const HowItWorks: React.FC = () => {
+  // const { t } = useTranslation();
+
+  return (
+    <section className="py-12 px-6 bg-light-background dark:bg-dark-background">
+      <div className="max-w-5xl mx-auto text-center">
+        <motion.h2
+          className="text-3xl md:text-4xl font-bold text-light-primary dark:text-dark-primary mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          How It Works
+        </motion.h2>
+        <motion.p
+          className="text-lg md:text-xl text-light-text dark:text-dark-text mb-8"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+        >
+          Get started with ShePath in a few simple steps!
+        </motion.p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <motion.div
+            className="bg-white dark:bg-dark-gray p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <h3 className="text-xl font-semibold text-light-secondary dark:text-dark-secondary mb-3">
+              1. Explore the Site
+            </h3>
+            <p className="text-light-text dark:text-dark-text text-justify">
+              Try all the navigation links (About, Programs, Community, Contact) at the top to see what we offer.
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="bg-white dark:bg-dark-gray p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h3 className="text-xl font-semibold text-light-secondary dark:text-dark-secondary mb-3">
+              2. Log In & Explore Your Dashboard
+            </h3>
+            <p className="text-light-text dark:text-dark-text text-justify">
+              Click "Login" and "register". You’ll be directed to a dashboard based on your role:
+              <ol className="list-disc list-none mt-2">
+                <li><strong>Learner (Default)</strong>: Access courses and progress.</li>
+                <li><strong>Mentor</strong>: Guide learners.</li>
+                <li><strong>Parent</strong>: get Support.</li>
+                <li><strong>Admin</strong>: Manage the platform.</li>
+              </ol>
+            </p>
+          </motion.div>
+
+          <motion.div
+            className="bg-white dark:bg-dark-gray p-6 rounded-lg shadow-lg hover:shadow-xl transition-shadow"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.5 }}
+          >
+            <h3 className="text-xl font-semibold text-light-secondary dark:text-dark-secondary mb-3">
+              3. Need Help?
+            </h3>
+            <p className="text-light-text dark:text-dark-text text-justify">
+              Check our <a href="/privacy-policy" className="text-light-primary hover:underline">Privacy Policy</a> in the footer. 
+              Facing issues? <a className="text-light-primary hover:underline">Send us a message</a>. 
+              Want to change your role? Request it <a className="text-light-primary hover:underline">contact us.</a>
+            </p>
+          </motion.div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+
 const HomePage: React.FC = () => {
   const { t } = useTranslation();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
@@ -67,7 +148,8 @@ const HomePage: React.FC = () => {
 
       {toaster && <Toaster message={toaster.message} type={toaster.type} />}
       <AboutPage />
-      <CoursesList setToaster={showToaster} /> {/* Pass setToaster */}
+      <CoursesList setToaster={showToaster} />
+      <HowItWorks />
       <Footer />
     </div>
   );
