@@ -2,7 +2,6 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState, AppDispatch } from "../store";
 import { getChats } from "../features/chatSlice";
 import { useEffect, useRef, useCallback } from "react";
-import Loader from "./Loader";
 
 interface ConversationsListProps {
   onSelectPartner: (partnerId: string) => void;
@@ -19,7 +18,7 @@ const ConversationsList = ({ onSelectPartner, selectedPartnerId }: Conversations
     if (currentUser) {
       dispatch(getChats(currentUser.id));
     }
-  }, [dispatch, currentUser]);
+  }, [dispatch]);
 
   const scrollToPartner = useCallback(() => {
     if (selectedPartnerId && convListRef.current) {
@@ -45,7 +44,7 @@ const ConversationsList = ({ onSelectPartner, selectedPartnerId }: Conversations
       ref={convListRef}
       className="conversations-list p-4 h-full overflow-y-auto bg-light-background dark:bg-dark-background"
     >
-      {status === "loading" && <Loader />}
+      {status === "loading" && ''}
       {uniquePartners.length === 0 && (
         <p className="text-gray-600 dark:text-gray-300 text-center mt-4">No conversations found.</p>
       )}

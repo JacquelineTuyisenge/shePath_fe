@@ -71,7 +71,7 @@ const GeneralNavbar: React.FC<{ onLoginBtnClick: () => void }> = ({ onLoginBtnCl
           ) : (
             <button className="flex items-center space-x-2 p-2 rounded hover:bg-light-accent hover:text-white transition" onClick={onLoginBtnClick}>
               <FaSignInAlt size={15} />
-              <span>{t("register")}</span>
+              <span>{t("login")}</span>
             </button>
           )}
         </div>
@@ -102,7 +102,7 @@ const GeneralNavbar: React.FC<{ onLoginBtnClick: () => void }> = ({ onLoginBtnCl
           ) : (
             <button className="flex items-center space-x-2 p-2 rounded hover:bg-light-accent hover:text-white transition" onClick={onLoginBtnClick}>
               <FaSignInAlt size={20} />
-              <span>{t("register")}</span>
+              <span>{t("login")}</span>
             </button>
           )}
         </div>

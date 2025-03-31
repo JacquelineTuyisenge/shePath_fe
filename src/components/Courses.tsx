@@ -51,6 +51,7 @@ const CoursesList: React.FC<CoursesListProps> = () => {
   const { categories = [] } = useSelector((state: RootState) => state.categories);
   const { currentUser } = useSelector((state: RootState) => state.users);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [searchQuery, setSearchQuery] = useState(""); // Added search state
   const [toasterMessage, setToasterMessage] = useState<string | null>(null);
 
   useEffect(() => {
@@ -76,12 +77,18 @@ const CoursesList: React.FC<CoursesListProps> = () => {
     }
   }, [error]);
 
-  // Filter courses by matching course.categoryId (name) with category.name
-  const filteredCourses = selectedCategory
-    ? courses.filter((course) =>
-        categories.find((cat) => cat.id === selectedCategory)?.name === course.categoryId
-      )
-    : courses;
+  // Filter courses by category and search query
+  const filteredCourses = courses
+    .filter((course) =>
+      selectedCategory
+        ? categories.find((cat) => cat.id === selectedCategory)?.name === course.categoryId
+        : true
+    )
+    .filter((course) =>
+      searchQuery
+        ? course.title.toLowerCase().includes(searchQuery.toLowerCase())
+        : true
+    );
 
   const sortedCourses = [...filteredCourses].sort((a, b) => {
     const dateA = new Date(a.createdAt || "1970-01-01").getTime();
@@ -103,23 +110,32 @@ const CoursesList: React.FC<CoursesListProps> = () => {
       {loading && <Loader />}
       {!loading && (
         <>
-          <div className="flex flex-wrap justify-between items-center mb-6 px-2">
+          <div className="flex flex-wrap justify-between items-center mb-6 px-2 gap-4">
             <h2 className="text-2xl font-semibold">Programs</h2>
-            <select
-              className="p-3 text-center rounded-lg bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text shadow-sm focus:outline-none"
-              onChange={(e) => setSelectedCategory(e.target.value)}
-              value={selectedCategory}
-            >
-              <option value="">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.id} className="bg-light-gray dark:bg-dark-gray">
-                  {category.name}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-4">
+              <select
+                className="p-3 text-center rounded-lg bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text shadow-sm focus:outline-none"
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                value={selectedCategory}
+              >
+                <option value="">All Categories</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id} className="bg-light-gray dark:bg-dark-gray">
+                    {category.name}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                placeholder="Search courses..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="p-3 rounded-lg bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text shadow-sm focus:outline-none w-full sm:w-64"
+              />
+            </div>
           </div>
           {sortedCourses.length === 0 && !error && (
-            <p className="text-center text-gray-600 dark:text-gray-300">No courses available for this category.</p>
+            <p className="text-center text-gray-600 dark:text-gray-300">No courses available for this search or category.</p>
           )}
           <Swiper
             modules={[Navigation, Pagination]}
@@ -164,7 +180,6 @@ const CoursesList: React.FC<CoursesListProps> = () => {
             <div className="custom-prev text-orange-500 hover:text-orange-700 cursor-pointer">Prev</div>
             <div className="custom-next text-orange-500 hover:text-orange-700 cursor-pointer">Next</div>
           </div>
-
         </>
       )}
     </div>

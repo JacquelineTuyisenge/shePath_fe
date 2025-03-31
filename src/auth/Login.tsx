@@ -8,7 +8,7 @@ import Loader from "../components/Loader";
 function Login() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const [isLogin, setIsLogin] = useState(false);
+    const [isLogin, setIsLogin] = useState(true);
     const [formData, setFormData] = useState({
         firstName: "",
         lastName: "",

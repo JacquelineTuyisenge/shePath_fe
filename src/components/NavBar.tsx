@@ -124,7 +124,7 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
                 onClick={onLoginBtnClick}
               >
                 <FaSignInAlt size={15} />
-                <span>{t("register")}</span>
+                <span>{t("login")}</span>
               </button>
             )}
           </div>
@@ -193,7 +193,7 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
               onClick={onLoginBtnClick}
             >
               <FaSignInAlt size={20} />
-              <span>{t("register")}</span>
+              <span>{t("login")}</span>
             </button>
           )}
         </div>
