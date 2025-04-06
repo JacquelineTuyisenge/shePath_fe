@@ -108,6 +108,9 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
 
     try {
       const result = await dispatch(toggleLike({ topicId })).unwrap();
+      if (result) {
+        console.log('liked')
+      };
       dispatch(fetchSingleTopic(topicId));
       setToaster({ message: isCurrentlyLiked ? "Unliked!" : "Liked!", type: "success" });
     } catch (error) {
