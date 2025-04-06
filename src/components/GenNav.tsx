@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { Menu, X, UserCircle } from "lucide-react";
+import { Menu, X, UserCircle, Loader } from "lucide-react";
 import { FaSignInAlt } from "react-icons/fa";
 import LanguageToggle from "./Translate";
 import ThemeToggle from "./Theme";
@@ -13,8 +13,17 @@ const GeneralNavbar: React.FC<{ onLoginBtnClick: () => void }> = ({ onLoginBtnCl
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
   const navigate = useNavigate();
+  const [authStatus, setAuthStatus] = useState<boolean | null>(null);
   const { currentUser } = useSelector((state: RootState) => state.users);
-  const authStatus = isAuthenticated();
+  // const authStatus = isAuthenticated();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const status = await isAuthenticated();
+      setAuthStatus(status);
+    };
+    checkAuth();
+  }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
@@ -28,6 +37,10 @@ const GeneralNavbar: React.FC<{ onLoginBtnClick: () => void }> = ({ onLoginBtnCl
       default: return "/";
     }
   };
+
+  if (authStatus === null) {
+    return <Loader />;
+  }
 
   return (
     <nav className="bg-light-gray w-full dark:bg-dark-gray p-4 flex justify-between items-center shadow-md fixed top-0 z-50">

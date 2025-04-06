@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../store";
 import { createTopic, fetchTopics } from '../features/topicSlice';
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { isAuthenticated } from "../utils/utils";
 import Toaster from "./Toaster";
 
@@ -14,19 +14,39 @@ const AskQuestion = ({ setIsAskQuestionOpen }: AskQuestionProps) => {
   const [imageUrl, setImage] = useState<File | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   const [toaster, setToaster] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [isAuth, setIsAuth] = useState<boolean | null>(null); // Add auth state
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authStatus = await isAuthenticated();
+      setIsAuth(authStatus);
+    };
+    checkAuth();
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!isAuthenticated()) {
+    
+    if (isAuth === null) {
+      setToaster({ message: "Checking authentication, please wait...", type: "error" });
+      return;
+    }
+
+    if (!isAuth) {
       setToaster({ message: "Please log in to create a topic", type: "error" });
       return;
     }
-    dispatch(createTopic({ content, imageUrl })).then(() => {
-      dispatch(fetchTopics());
+
+    try {
+      await dispatch(createTopic({ content, imageUrl })).unwrap();
+      await dispatch(fetchTopics()).unwrap();
       setContent("");
       setImage(null);
       setIsAskQuestionOpen(false);
-    });
+    } catch (error) {
+      setToaster({ message: "Failed to create topic", type: "error" });
+    }
   };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,7 +71,13 @@ const AskQuestion = ({ setIsAskQuestionOpen }: AskQuestionProps) => {
           onChange={handleImageChange}
         />
         <div className="flex gap-4">
-          <button type="submit" className="bg-light-primary text-white px-4 py-2 rounded">Submit</button>
+          <button 
+            type="submit" 
+            className="bg-light-primary text-white px-4 py-2 rounded"
+            disabled={isAuth === null} // Disable button while auth is being checked
+          >
+            Submit
+          </button>
           <button 
             type="button" 
             className="bg-light-gray dark:bg-dark-gray text-light-text dark:text-dark-text px-4 py-2 rounded" 

@@ -32,6 +32,7 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
   const [newImage, setNewImage] = useState<File | null>(null);
   const [showAllComments, setShowAllComments] = useState(false);
   const [toaster, setToaster] = useState<{ message: string; type: "success" | "error" } | null>(null);
+  const [isAuth, setIsAuth] = useState<boolean | null>(null); // Add auth state
 
   const topic = topics.find((t) => t.id === topicId);
 
@@ -41,6 +42,15 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
       dispatch(getProfile());
     }
   }, [dispatch, topicId]);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authStatus = await isAuthenticated();
+      setIsAuth(authStatus);
+    };
+    checkAuth();
+  }, []);
 
   const handleEdit = () => {
     if (topic) {
@@ -59,7 +69,6 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
         setDeleteModalOpen(false);
         // Optionally, redirect or clear the topic view after a delay
         setTimeout(() => {
-          // You might want to navigate away or reset the state here
           // e.g., window.location.href = "/community";
         }, 2000);
       } else {
@@ -83,8 +92,12 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
 
   const handleToggleComments = () => setShowAllComments(!showAllComments);
 
-  const handleToggleLike = () => {
-    if (!isAuthenticated()) {
+  const handleToggleLike = async () => {
+    if (isAuth === null) {
+      setToaster({ message: "Checking authentication, please wait...", type: "error" });
+      return;
+    }
+    if (!isAuth) {
       setToaster({ message: "Please log in to like topics", type: "error" });
       return;
     }
@@ -93,15 +106,29 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
     const isCurrentlyLiked = likedTopics.includes(topicId);
     dispatch(toggleLikeLocal(topicId)); // Optimistic update
 
-    dispatch(toggleLike({ topicId })).then((result) => {
-      if (toggleLike.fulfilled.match(result)) {
-        dispatch(fetchSingleTopic(topicId));
-        setToaster({ message: isCurrentlyLiked ? "Unliked!" : "Liked!", type: "success" });
-      } else {
-        dispatch(toggleLikeLocal(topicId));
-        setToaster({ message: "Failed to update like", type: "error" });
-      }
-    });
+    try {
+      const result = await dispatch(toggleLike({ topicId })).unwrap();
+      if (result) {
+        console.log('liked')
+      };
+      dispatch(fetchSingleTopic(topicId));
+      setToaster({ message: isCurrentlyLiked ? "Unliked!" : "Liked!", type: "success" });
+    } catch (error) {
+      dispatch(toggleLikeLocal(topicId)); // Revert optimistic update on failure
+      setToaster({ message: "Failed to update like", type: "error" });
+    }
+  };
+
+  const handleOpenCommentModal = () => {
+    if (isAuth === null) {
+      setToaster({ message: "Checking authentication, please wait...", type: "error" });
+      return;
+    }
+    if (!isAuth) {
+      setToaster({ message: "Please log in to comment", type: "error" });
+      return;
+    }
+    setCommentModalOpen(true);
   };
 
   const addComment = (newComment: any) => {
@@ -121,11 +148,11 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
       ) : (
         <div className="min-h-screen p-4 bg-light-background dark:bg-dark-background shadow-md rounded-lg">
           {toaster && (
-              <Toaster
-                  message={toaster.message}
-                  type={toaster.type}
-                  onClose={() => setToaster(null)} // Reset toaster state
-              />
+            <Toaster
+              message={toaster.message}
+              type={toaster.type}
+              onClose={() => setToaster(null)}
+            />
           )}
           {topic ? (
             <>
@@ -183,14 +210,9 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
               {/* Like and Comment Section */}
               <div className="mt-6 flex justify-between items-center">
                 <button
-                  onClick={() => {
-                    if (!isAuthenticated()) {
-                      setToaster({ message: "Please log in to comment", type: "error" });
-                      return;
-                    }
-                    setCommentModalOpen(true);
-                  }}
+                  onClick={handleOpenCommentModal}
                   className="flex items-center gap-2 text-light-secondary dark:text-dark-text hover:text-orange-500 transition-colors"
+                  disabled={isAuth === null} // Disable while auth is being checked
                 >
                   <FaCommentDots className="text-2xl" />
                   <span className="font-semibold">{topic.comments.length}</span>
@@ -200,6 +222,7 @@ const QuestionDetail = ({ topicId }: { topicId: string }) => {
                   className={`flex items-center gap-2 transition-colors ${
                     isLiked ? "text-red-500" : "text-light-secondary dark:text-dark-text"
                   } hover:text-red-400`}
+                  disabled={isAuth === null} // Disable while auth is being checked
                 >
                   {isLiked ? <FaHeart className="text-2xl" /> : <FaRegHeart className="text-2xl" />}
                   <span className="font-semibold">{topic.likes.length}</span>

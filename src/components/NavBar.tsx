@@ -16,12 +16,16 @@ interface NavBarProps {
 const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
   const { t } = useTranslation();
   const [isOpen, setIsOpen] = useState(false);
-  const [authStatus, setAuthStatus] = useState(false);
+  const [authStatus, setAuthStatus] = useState<boolean | null>(null); // Change initial to null
   const navigate = useNavigate();
   const { currentUser } = useSelector((state: RootState) => state.users);
 
   useEffect(() => {
-    setAuthStatus(isAuthenticated());
+    const checkAuth = async () => {
+      const status = await isAuthenticated();
+      setAuthStatus(status);
+    };
+    checkAuth();
   }, []);
 
   const toggleMenu = () => setIsOpen(!isOpen);
@@ -41,6 +45,11 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
         return "/";
     }
   };
+
+  // Optional: Render a loading state while authStatus is being checked
+  if (authStatus === null) {
+    return <div className="bg-light-gray dark:bg-dark-gray w-full p-4 fixed top-0 z-50">Loading...</div>;
+  }
 
   return (
     <nav className="bg-light-gray w-full dark:bg-dark-gray p-4 flex justify-between items-center shadow-md fixed top-0 z-50">
@@ -132,7 +141,7 @@ const Navbar: React.FC<NavBarProps> = ({ onLoginBtnClick }) => {
       </div>
 
       {/* Desktop Menu */}
-      <div className="hidden md:flex space-x-6 mx-2 mr-6"> {/* Added mr-6 for right margin */}
+      <div className="hidden md:flex space-x-6 mx-2 mr-6">
         <ul className="flex space-x-4 items-center">
           <li className="hover:text-light-primary cursor-pointer">
             <button
