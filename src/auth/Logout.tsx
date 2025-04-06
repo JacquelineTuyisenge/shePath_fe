@@ -1,6 +1,10 @@
+import Cookies
+ from "js-cookie";
 const LogoutButton = () => {
     const handleLogout = () => {
-        localStorage.removeItem("token");
+        // localStorage.removeItem("token");
+        Cookies.remove("token");
+        localStorage.removeItem("role");
         window.location.reload();
     };
 

@@ -8,14 +8,18 @@
 - [Getting Started](#getting-started)
 - [Designs](#designs)
 - [Deployment Plan](#deployment-plan)
+- **How it works**
 - [Contributing](#contributing)
-- [License](#license)
+
 
 ## Description
 
-**shePath** is a platform focused on creating opportunities for women in various fields. It helps them connect, share experiences, and access tools for personal growth and career development. This project serves as the frontend for that platform, providing an intuitive user interface and responsive design.
+**shePath** is a platform focused on tackle the education crisis among girls from rural areas in Rwanda by creating a digital platform that confronts these barriers head-on. By leveraging technology to address the root causes of educational inequities, this initiative aims to empower rural girls, enabling them to pursue education and achieve socio-economic growth.
+
 
 Developed with React, TypeScript, and TailwindCSS, the frontend ensures scalability and easy maintenance.
+
+Cookies-httpOnly and backend authorisation were used to ensure protection of user data
 
 ## GitHub Repository
 
@@ -54,21 +58,38 @@ Ensure you have the following installed:
     npm run dev
     ```
 
-### Env Variables
-create **.env** file at the root of project and add the environment variables
-
 ### Designs
 
 - App Screenshots: 
 <br/>
 <img src="image.png" /> 
 <img src="image2.png" />
+... explore more on the platform
 
 ### Deployment plan
 Vercel for frontend deployment
 Link: https://she-path-front.vercel.app/
 
+### How it Works:
+
+1. User enters platform : https://she-path-front.vercel.app/
+2. HomePage and its sections
+3. User Registration
+4. Default Learner Dashboard:
+
+ * From Settings, User can
+ - Exit dashboard: Return to homePage
+ - Logout
+
+ * User Request Role change from Contact Form
+ - Admin grant access
+ - User Logs in again
+ - User Explore other content of the Platform
+
+ Please pay attention to toast messages to ensure Full experience
+
+5. For PWA(Progessive Web App)
+ - user can install the app
+
 ### Contributor
 Jacqueline Tuyisenge
-
-### Licence

@@ -42,7 +42,7 @@ function Login() {
                     password: formData.password
                 });
 
-                localStorage.setItem('token', data.token);
+                // localStorage.setItem('token', data.token);
                 localStorage.setItem('role', data.user.role);
                 localStorage.setItem('profile', JSON.stringify(data.profile));
 
