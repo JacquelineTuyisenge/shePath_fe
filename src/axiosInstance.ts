@@ -1,8 +1,8 @@
 import axios from "axios";
 
 // const API = 'https://shepath-be.onrender.com'; // render
-const API = 'https://shepathbe-production.up.railway.app/'; // railway
-// const API = 'http://localhost:5000';
+// const API = 'https://shepathbe-production.up.railway.app/'; // railway
+const API = 'http://localhost:5000';
 
 const axiosInstance = axios.create({
     baseURL: API,

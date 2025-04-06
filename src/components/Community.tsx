@@ -2,7 +2,7 @@ import Sidebar from "./Sidebar";
 import QuestionDetail from "./QuestionDetail";
 import AskQuestion from "./Ask";
 import { Nav } from "./CommunityNav";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../store";
 import Toaster from "./Toaster";
@@ -15,24 +15,40 @@ const TopicList = () => {
   const [isAskQuestionOpen, setIsAskQuestionOpen] = useState(false);
   const [toaster, setToaster] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false); // Sidebar toggle state
+  const [isAuth, setIsAuth] = useState<boolean | null>(null); // Add auth state
 
   const topics = useSelector((state: RootState) => state.topics.topics);
   const filteredTopics = topics.filter(topic =>
     topic.content.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authStatus = await isAuthenticated();
+      setIsAuth(authStatus);
+    };
+    checkAuth();
+  }, []);
+
+  const handleAskQuestionOpen = async (value: boolean) => {
+    if (isAuth === null) {
+      setToaster({ message: "Checking authentication, please wait...", type: "error" });
+      return;
+    }
+    if (!isAuth) {
+      setToaster({ message: "Please log in to ask a question", type: "error" });
+      return;
+    }
+    setIsAskQuestionOpen(value);
+  };
+
   return (
     <div className="min-h-screen bg-light-background text-light-text dark:bg-dark-background dark:text-dark-text">
       <Nav 
         searchTerm={searchTerm} 
         setSearchTerm={setSearchTerm} 
-        setIsAskQuestionOpen={(value) => {
-          if (!isAuthenticated()) {
-            setToaster({ message: "Please log in to ask a question", type: "error" });
-            return;
-          }
-          setIsAskQuestionOpen(value);  
-        }} 
+        setIsAskQuestionOpen={handleAskQuestionOpen} 
       />
       {toaster && <Toaster message={toaster.message} type={toaster.type} />}
 
