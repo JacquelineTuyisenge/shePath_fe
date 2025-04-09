@@ -8,7 +8,7 @@ const LanguageToggle: React.FC = () => {
 
   const handleLanguageChange = (language: string) => {
     i18n.changeLanguage(language);
-    setIsDropdownVisible(false); // Hide dropdown after language selection
+    setIsDropdownVisible(false); 
   };
 
   return (
@@ -19,7 +19,6 @@ const LanguageToggle: React.FC = () => {
         onClick={() => setIsDropdownVisible((prev) => !prev)}
       />
       
-      {/* Dropdown that appears when icon is clicked */}
       {isDropdownVisible && (
         <div className="absolute top-5 left-5 mt-5 bg-light-gray dark:bg-dark-gray shadow-lg text-light-text dark:text-dark-text rounded border">
           <div

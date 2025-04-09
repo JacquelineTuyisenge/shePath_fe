@@ -6,7 +6,7 @@ const LogoutButton = () => {
       const response = await axiosInstance.post("/api/auth/logout", {});
       if (response.status === 200) {
         console.log("Logged out successfully");
-        window.location.href = "/";
+        // window.location.href = "/";
       }
     } catch (error) {
       console.error("Error logging out:", error);
