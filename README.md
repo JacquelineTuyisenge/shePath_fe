@@ -6,7 +6,6 @@
 - [Description](#description)
 - [GitHub Repository](#github-repository)
 - [Getting Started](#getting-started)
-- [Designs](#designs)
 - [Deployment Plan](#deployment-plan)
 - **How it works**
 - [Contributing](#contributing)
@@ -57,14 +56,6 @@ Ensure you have the following installed:
     ```bash
     npm run dev
     ```
-
-### Designs
-
-- App Screenshots: 
-<br/>
-<img src="image.png" /> 
-<img src="image2.png" />
-... explore more on the platform
 
 ### Deployment plan
 Vercel for frontend deployment
